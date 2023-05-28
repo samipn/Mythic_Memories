@@ -2,6 +2,7 @@
 const SCALE = 0.5;
 const tileSize = 209;
 const MAX_VELOCITY = 300;
+const objectDepth = 2;
 const playerDepth = 1;
 const envDepth = 0;
 
@@ -23,6 +24,6 @@ const game = new Phaser.Game({
         }
     },
     backgroundColor: 0x87CEEB,
-    scene: [CharacterMovement],
+    scene: [CoreGameplay],
     title: "Mythic Memories"
 });
