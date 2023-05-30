@@ -1,12 +1,13 @@
 class CentralHub extends Phaser.Scene {
     constructor() {
-        super('charactermovement');
+        super('centralhub');
     }
     preload() {
       this.load.path = "./assets/";		
       this.load.image('Beta Apollo', 'BetaApollo.png')
       this.load.image('Dirt', 'Dirt.png')
       this.load.image('Door', 'Door.png')
+      this.load.image('Bow', 'pizzarolls.png')
     }
     create() {
         // Created Player
@@ -52,6 +53,7 @@ class CentralHub extends Phaser.Scene {
         this.objects = this.add.group();
 
         // Created pedastals
+        this.pedastals = this.add.group();
         this.pedastal1 = this.add.tileSprite(450,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal1.name = "pedastal1";
         this.physics.add.existing(this.pedastal1);
@@ -59,7 +61,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal1.body.setSize(tileSize,tileSize);
         this.pedastal1.body.setOffset(0,tileSize);
         this.pedastal1.setDepth(envDepth);
-        this.objects.add(this.pedastal1);
+        this.pedastals.add(this.pedastal1);
 
         this.pedastal2 = this.add.tileSprite(750,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal2.name = "pedastal2";
@@ -68,7 +70,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal2.body.setSize(tileSize,tileSize);
         this.pedastal2.body.setOffset(0,tileSize);
         this.pedastal2.setDepth(envDepth);
-        this.objects.add(this.pedastal2);
+        this.pedastals.add(this.pedastal2);
 
         this.pedastal3 = this.add.tileSprite(1050,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal3.name = "pedastal3";
@@ -77,7 +79,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal3.body.setSize(tileSize,tileSize);
         this.pedastal3.body.setOffset(0,tileSize);
         this.pedastal3.setDepth(envDepth);
-        this.objects.add(this.pedastal3);
+        this.pedastals.add(this.pedastal3);
 
         this.pedastal4 = this.add.tileSprite(1350,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal4.name = "pedastal4";
@@ -86,35 +88,52 @@ class CentralHub extends Phaser.Scene {
         this.pedastal4.body.setSize(tileSize,tileSize);
         this.pedastal4.body.setOffset(0,tileSize);
         this.pedastal4.setDepth(envDepth);
-        this.objects.add(this.pedastal4);
+        this.pedastals.add(this.pedastal4);
 
 
         // Created Puzzle Doors
+        this.puzzledoors = this.add.group();
+
         this.puzzleDoor1 = this.physics.add.sprite(450, 153, 'Door').setOrigin(0.5).setScale(3);
         this.puzzleDoor1.body.immovable = true;
         this.puzzleDoor1.body.setSize(30,60);
         this.puzzleDoor1.body.setOffset(35, 17);
         this.puzzleDoor1.setDepth(objectDepth);
+        this.puzzledoors.add(this.puzzleDoor1);
 
         this.puzzleDoor2 = this.physics.add.sprite(750, 153, 'Door').setOrigin(0.5).setScale(3);
         this.puzzleDoor2.body.immovable = true;
         this.puzzleDoor2.body.setSize(30,60);
         this.puzzleDoor2.body.setOffset(35, 17);
         this.puzzleDoor2.setDepth(objectDepth);
+        this.puzzledoors.add(this.puzzleDoor2);
 
         this.puzzleDoor3 = this.physics.add.sprite(1050, 153, 'Door').setOrigin(0.5).setScale(3);
         this.puzzleDoor3.body.immovable = true;
         this.puzzleDoor3.body.setSize(30,60);
         this.puzzleDoor3.body.setOffset(35, 17);
         this.puzzleDoor3.setDepth(objectDepth);
+        this.puzzledoors.add(this.puzzleDoor3);
 
         this.puzzleDoor4 = this.physics.add.sprite(1350, 153, 'Door').setOrigin(0.5).setScale(3);
         this.puzzleDoor4.body.immovable = true;
         this.puzzleDoor4.body.setSize(30,60);
         this.puzzleDoor4.body.setOffset(35, 17);
         this.puzzleDoor4.setDepth(objectDepth);
+        this.puzzledoors.add(this.puzzleDoor4);
 
-        // Created collectables
+        // Created artifacts
+        this.artifacts = this.add.group();
+
+        this.bow = this.physics.add.sprite(450, 700, 'Bow').setOrigin(0.5,1);
+        this.bow.body.immovable = true;
+        this.bow.setDepth(objectDepth);
+        this.artifacts.add(this.bow);
+        this.bow.visible = false;
+
+        if(artifacts.length >= 1) {
+            this.bow.visible = true;
+        }
 
         // Created overlap hitboxes
         this.pedastal1OverlapBody = this.add.tileSprite(this.pedastal1.x, this.pedastal1.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
@@ -137,17 +156,16 @@ class CentralHub extends Phaser.Scene {
         this.pedastal4OverlapBody.body.immovable = true;
         this.pedastal4OverlapBody.visible = false;
 
+        
+
         // Physics stuff
         this.physics.add.collider(this.player, this.walls);
-        this.physics.add.collider(this.player, this.objects);
-        this.physics.add.overlap(this.player, this.puzzleDoor1, this.interactDoor, null, this);
-        this.physics.add.overlap(this.player, this.puzzleDoor2, this.interactDoor, null, this);
-        this.physics.add.overlap(this.player, this.puzzleDoor3, this.interactDoor, null, this);
-        this.physics.add.overlap(this.player, this.puzzleDoor4, this.interactDoor, null, this);
+        this.physics.add.collider(this.player, this.pedastals, this.interactPedastal, null, this);
+        this.physics.add.overlap(this.player, this.puzzledoors, this.interactDoor, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.artifacts, this.interactArtifact, null, this);
     }
     update() {
         // Hacky overlap detection
-        //console.log(this.objects.children);
         this.objects.children.each((object) => {
             // slap on OverlapBody to end of object (convention for overlap vs object collision)
             let dynamicVariableName = object.name + "OverlapBody";
@@ -208,9 +226,68 @@ class CentralHub extends Phaser.Scene {
         }
     }
 
-    interactDoor() {
+    interactDoor(player, door) {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
-            console.log("good shit you're done for the day.");
+            this.cameras.main.fade(1000, 0, 0, 0);
+            console.log(door.name);
+            this.time.delayedCall(1000, () => {
+                if(door == this.puzzleDoor1) {
+                    this.scene.start('musicpuzzle');
+                }
+                if(door == this.puzzleDoor2) {
+                    this.scene.start('bowpuzzle');
+                }
+                if(door == this.puzzleDoor3) {
+                    this.scene.start('riddlepuzzle');
+                }
+                if(door == this.puzzleDoor4) {
+                    this.scene.start('mazepuzzle');
+                }
+            });
         }
+    }
+
+    interactArtifact(player, artifact) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+            inventory.push(artifact);
+            artifact.destroy();
+        }
+    }
+
+    interactPedastal(player, pedastal) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedastal == this.pedastal1)) {
+            if(inventory.length == 1) {
+                console.log("artifact placed on pedastal");
+                artifacts.push(inventory.pop());
+            }
+            else if(inventory < 1) {
+                console.log("You need to find something to place here");
+            }
+            else {
+                console.log("You don't have the right artifact to place here");
+            }
+        }
+    }
+}
+
+class MusicPuzzle extends Phaser.Scene {
+    constructor() {
+        super('musicpuzzle');
+    }
+    preload() {
+      this.load.path = "./assets/";		
+      this.load.image('Beta Apollo', 'BetaApollo.png')
+      this.load.image('Dirt', 'Dirt.png')
+      this.load.image('Door', 'Door.png')
+      this.load.image('Bow', 'pizzarolls.png')
+    }
+    create() {
+        this.time.delayedCall(1000, () => {
+            this.scene.start('centralhub');
+        });
+    }
+
+    update() {
+
     }
 }

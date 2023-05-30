@@ -6,7 +6,7 @@ const objectDepth = 0;
 const playerDepth = 1;
 const envDepth = -1;
 let inventory = [];
-let pedestals = [];
+let artifacts = [];
 
 const game = new Phaser.Game({
     scale: {
@@ -26,6 +26,6 @@ const game = new Phaser.Game({
         }
     },
     backgroundColor: 0x87CEEB,
-    scene: [CentralHub],
+    scene: [CentralHub, MusicPuzzle],
     title: "Mythic Memories"
 });
