@@ -1,4 +1,4 @@
-class CoreGameplay extends Phaser.Scene {
+class CentralHub extends Phaser.Scene {
     constructor() {
         super('charactermovement');
     }
@@ -21,13 +21,6 @@ class CoreGameplay extends Phaser.Scene {
         this.playerInteractBox.body.setOffset(0,120);
         this.playerInteractBox.visible = false;
         this.playerInteractBox.body.immovable = true;
-
-        // Created Puzzle Doors
-        this.puzzleDoor1 = this.physics.add.sprite(500, 153, 'Door').setOrigin(0.5).setScale(3);
-        this.puzzleDoor1.body.immovable = true;
-        this.puzzleDoor1.body.setSize(30,60);
-        this.puzzleDoor1.body.setOffset(35, 17);
-        this.puzzleDoor1.setDepth(objectDepth);
 
         // Created Room walls
         this.walls = this.add.group();
@@ -55,36 +48,111 @@ class CoreGameplay extends Phaser.Scene {
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
 
-        // Created collidable objects
+        // Make group for all collidable objects
         this.objects = this.add.group();
-        this.object = this.add.tileSprite(1000,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.object.name = "object";
-        this.physics.add.existing(this.object);
-        this.object.body.immovable = true;
-        this.object.body.setSize(tileSize,tileSize);
-        this.object.body.setOffset(0,tileSize);
-        this.object.setDepth(envDepth);
-        this.objects.add(this.object);
+
+        // Created pedastals
+        this.pedastal1 = this.add.tileSprite(450,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.pedastal1.name = "pedastal1";
+        this.physics.add.existing(this.pedastal1);
+        this.pedastal1.body.immovable = true;
+        this.pedastal1.body.setSize(tileSize,tileSize);
+        this.pedastal1.body.setOffset(0,tileSize);
+        this.pedastal1.setDepth(envDepth);
+        this.objects.add(this.pedastal1);
+
+        this.pedastal2 = this.add.tileSprite(750,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.pedastal2.name = "pedastal2";
+        this.physics.add.existing(this.pedastal2);
+        this.pedastal2.body.immovable = true;
+        this.pedastal2.body.setSize(tileSize,tileSize);
+        this.pedastal2.body.setOffset(0,tileSize);
+        this.pedastal2.setDepth(envDepth);
+        this.objects.add(this.pedastal2);
+
+        this.pedastal3 = this.add.tileSprite(1050,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.pedastal3.name = "pedastal3";
+        this.physics.add.existing(this.pedastal3);
+        this.pedastal3.body.immovable = true;
+        this.pedastal3.body.setSize(tileSize,tileSize);
+        this.pedastal3.body.setOffset(0,tileSize);
+        this.pedastal3.setDepth(envDepth);
+        this.objects.add(this.pedastal3);
+
+        this.pedastal4 = this.add.tileSprite(1350,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.pedastal4.name = "pedastal4";
+        this.physics.add.existing(this.pedastal4);
+        this.pedastal4.body.immovable = true;
+        this.pedastal4.body.setSize(tileSize,tileSize);
+        this.pedastal4.body.setOffset(0,tileSize);
+        this.pedastal4.setDepth(envDepth);
+        this.objects.add(this.pedastal4);
+
+
+        // Created Puzzle Doors
+        this.puzzleDoor1 = this.physics.add.sprite(450, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor1.body.immovable = true;
+        this.puzzleDoor1.body.setSize(30,60);
+        this.puzzleDoor1.body.setOffset(35, 17);
+        this.puzzleDoor1.setDepth(objectDepth);
+
+        this.puzzleDoor2 = this.physics.add.sprite(750, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor2.body.immovable = true;
+        this.puzzleDoor2.body.setSize(30,60);
+        this.puzzleDoor2.body.setOffset(35, 17);
+        this.puzzleDoor2.setDepth(objectDepth);
+
+        this.puzzleDoor3 = this.physics.add.sprite(1050, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor3.body.immovable = true;
+        this.puzzleDoor3.body.setSize(30,60);
+        this.puzzleDoor3.body.setOffset(35, 17);
+        this.puzzleDoor3.setDepth(objectDepth);
+
+        this.puzzleDoor4 = this.physics.add.sprite(1350, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor4.body.immovable = true;
+        this.puzzleDoor4.body.setSize(30,60);
+        this.puzzleDoor4.body.setOffset(35, 17);
+        this.puzzleDoor4.setDepth(objectDepth);
+
+        // Created collectables
 
         // Created overlap hitboxes
-        this.objectOverlaps = this.add.group();
-        this.objectOverlapBody = this.add.tileSprite(this.object.x, this.object.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.physics.add.existing(this.objectOverlapBody);
-        this.objectOverlapBody.body.immovable = true;
-        this.objectOverlapBody.visible = false;
-        this.objectOverlaps.add(this.objectOverlapBody);
+        this.pedastal1OverlapBody = this.add.tileSprite(this.pedastal1.x, this.pedastal1.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.physics.add.existing(this.pedastal1OverlapBody);
+        this.pedastal1OverlapBody.body.immovable = true;
+        this.pedastal1OverlapBody.visible = false;
+
+        this.pedastal2OverlapBody = this.add.tileSprite(this.pedastal2.x, this.pedastal2.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.physics.add.existing(this.pedastal2OverlapBody);
+        this.pedastal2OverlapBody.body.immovable = true;
+        this.pedastal2OverlapBody.visible = false;
+        
+        this.pedastal3OverlapBody = this.add.tileSprite(this.pedastal3.x, this.pedastal3.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.physics.add.existing(this.pedastal3OverlapBody);
+        this.pedastal3OverlapBody.body.immovable = true;
+        this.pedastal3OverlapBody.visible = false;
+
+        this.pedastal4OverlapBody = this.add.tileSprite(this.pedastal4.x, this.pedastal4.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
+        this.physics.add.existing(this.pedastal4OverlapBody);
+        this.pedastal4OverlapBody.body.immovable = true;
+        this.pedastal4OverlapBody.visible = false;
 
         // Physics stuff
         this.physics.add.collider(this.player, this.walls);
         this.physics.add.collider(this.player, this.objects);
         this.physics.add.overlap(this.player, this.puzzleDoor1, this.interactDoor, null, this);
+        this.physics.add.overlap(this.player, this.puzzleDoor2, this.interactDoor, null, this);
+        this.physics.add.overlap(this.player, this.puzzleDoor3, this.interactDoor, null, this);
+        this.physics.add.overlap(this.player, this.puzzleDoor4, this.interactDoor, null, this);
     }
     update() {
         // Hacky overlap detection
+        //console.log(this.objects.children);
         this.objects.children.each((object) => {
             // slap on OverlapBody to end of object (convention for overlap vs object collision)
             let dynamicVariableName = object.name + "OverlapBody";
             let dynamicVariable = this[dynamicVariableName];
+
             // check if its inside object using intersection area to prevent colliding triggers
             let intersection = Phaser.Geom.Rectangle.Intersection(this.player.body, dynamicVariable.body);
             let intersectionArea = Phaser.Geom.Rectangle.Area(intersection);

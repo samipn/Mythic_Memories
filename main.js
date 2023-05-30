@@ -2,9 +2,11 @@
 const SCALE = 0.5;
 const tileSize = 209;
 const MAX_VELOCITY = 300;
-const objectDepth = 2;
+const objectDepth = 0;
 const playerDepth = 1;
-const envDepth = 0;
+const envDepth = -1;
+let inventory = [];
+let pedestals = [];
 
 const game = new Phaser.Game({
     scale: {
@@ -24,6 +26,6 @@ const game = new Phaser.Game({
         }
     },
     backgroundColor: 0x87CEEB,
-    scene: [CoreGameplay],
+    scene: [CentralHub],
     title: "Mythic Memories"
 });
