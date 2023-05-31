@@ -384,9 +384,7 @@ class MusicPuzzle extends Phaser.Scene {
         const playNextAudio = () => {
             if (this.musicSlots.length > 0) {
               let audio = this.musicSlots.pop();
-              audio.play();
-                this.playedOrder.push(audio);
-        
+              audio.play();        
               audio.once('complete', () => {
                 playNextAudio(); // Call the local arrow function recursively
               });
@@ -398,6 +396,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.playMusic = (player, button) => {
             if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.playing === false) {
                 console.log(this.musicSlots);
+                console.log(this.playedOrder);
               playNextAudio(); // Call the local arrow function to start playing the audio
               this.playing = true;
             }
@@ -479,6 +478,7 @@ class MusicPuzzle extends Phaser.Scene {
         piece.body.immovable = true;
         piece.body.enable = false;
         this.musicSlots.push(this[piece.name]);
+        this.playedOrder.push(piece.name);
     }
 
     resetPieces() {
