@@ -62,6 +62,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal1.body.setOffset(0,tileSize);
         this.pedastal1.setDepth(envDepth);
         this.pedastals.add(this.pedastal1);
+        this.objects.add(this.pedastal1);
 
         this.pedastal2 = this.add.tileSprite(750,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal2.name = "pedastal2";
@@ -71,6 +72,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal2.body.setOffset(0,tileSize);
         this.pedastal2.setDepth(envDepth);
         this.pedastals.add(this.pedastal2);
+        this.objects.add(this.pedastal2);
 
         this.pedastal3 = this.add.tileSprite(1050,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal3.name = "pedastal3";
@@ -80,6 +82,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal3.body.setOffset(0,tileSize);
         this.pedastal3.setDepth(envDepth);
         this.pedastals.add(this.pedastal3);
+        this.objects.add(this.pedastal3);
 
         this.pedastal4 = this.add.tileSprite(1350,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.pedastal4.name = "pedastal4";
@@ -89,6 +92,7 @@ class CentralHub extends Phaser.Scene {
         this.pedastal4.body.setOffset(0,tileSize);
         this.pedastal4.setDepth(envDepth);
         this.pedastals.add(this.pedastal4);
+        this.objects.add(this.pedastal4);
 
 
         // Created Puzzle Doors
@@ -123,18 +127,10 @@ class CentralHub extends Phaser.Scene {
         this.puzzledoors.add(this.puzzleDoor4);
 
         // Created artifacts
-        this.artifacts = this.add.group();
-
-        this.bow = this.physics.add.sprite(450, 700, 'Bow').setOrigin(0.5,1);
-        this.bow.body.immovable = true;
+        this.bow = this.add.sprite(450, 700, 'Bow').setOrigin(0.5,1);
         this.bow.setDepth(objectDepth);
-        this.artifacts.add(this.bow);
         this.bow.visible = false;
-
-        if(artifacts.length >= 1) {
-            this.bow.visible = true;
-        }
-
+        
         // Created overlap hitboxes
         this.pedastal1OverlapBody = this.add.tileSprite(this.pedastal1.x, this.pedastal1.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
         this.physics.add.existing(this.pedastal1OverlapBody);
@@ -160,9 +156,9 @@ class CentralHub extends Phaser.Scene {
 
         // Physics stuff
         this.physics.add.collider(this.player, this.walls);
-        this.physics.add.collider(this.player, this.pedastals, this.interactPedastal, null, this);
+        this.physics.add.collider(this.player, this.pedastals);
         this.physics.add.overlap(this.player, this.puzzledoors, this.interactDoor, null, this);
-        this.physics.add.overlap(this.playerInteractBox, this.artifacts, this.interactArtifact, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.pedastals, this.interactPedastal, null, this);
     }
     update() {
         // Hacky overlap detection
@@ -186,6 +182,10 @@ class CentralHub extends Phaser.Scene {
                 this.player.alpha = 1;
             }
         });
+
+        if(pedastalArtifacts[0] == true) {
+            this.bow.visible = true;
+        }
 
         // Have interact hitbox follow player
         this.playerInteractBox.x = this.player.x;
@@ -229,7 +229,6 @@ class CentralHub extends Phaser.Scene {
     interactDoor(player, door) {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
             this.cameras.main.fade(1000, 0, 0, 0);
-            console.log(door.name);
             this.time.delayedCall(1000, () => {
                 if(door == this.puzzleDoor1) {
                     this.scene.start('musicpuzzle');
@@ -247,20 +246,13 @@ class CentralHub extends Phaser.Scene {
         }
     }
 
-    interactArtifact(player, artifact) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
-            inventory.push(artifact);
-            artifact.destroy();
-        }
-    }
-
     interactPedastal(player, pedastal) {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedastal == this.pedastal1)) {
             if(inventory.length == 1) {
                 console.log("artifact placed on pedastal");
-                artifacts.push(inventory.pop());
+                pedastalArtifacts[0] = true;
             }
-            else if(inventory < 1) {
+            else if(inventory.length < 1) {
                 console.log("You need to find something to place here");
             }
             else {
@@ -275,19 +267,225 @@ class MusicPuzzle extends Phaser.Scene {
         super('musicpuzzle');
     }
     preload() {
-      this.load.path = "./assets/";		
-      this.load.image('Beta Apollo', 'BetaApollo.png')
-      this.load.image('Dirt', 'Dirt.png')
-      this.load.image('Door', 'Door.png')
-      this.load.image('Bow', 'pizzarolls.png')
+        this.load.path = "./assets/";		
+        this.load.image('Beta Apollo', 'BetaApollo.png')
+        this.load.image('Dirt', 'Dirt.png')
+        this.load.image('Door', 'Door.png')
+        this.load.image('Bow', 'pizzarolls.png')
+        this.load.image('Play', 'Play.png')
+        this.load.audio('audio1', '1.mp3');
+        this.load.audio('audio2', '2.mp3');
+        this.load.audio('audio3', '3.mp3');
+        this.load.audio('audio4', '4.mp3');
     }
     create() {
-        this.time.delayedCall(1000, () => {
-            this.scene.start('centralhub');
-        });
+        this.playing = false;
+        this.musicSlots = [];
+        this.playedOrder = [];
+
+        // Create audio
+        this.audio1 = this.sound.add('audio1');
+        this.audio2 = this.sound.add('audio2');
+        this.audio3 = this.sound.add('audio3');
+        this.audio4 = this.sound.add('audio4');
+        
+        // Created Player
+        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player.setCollideWorldBounds(true);
+        this.player.body.setSize(70,20);
+        this.player.body.setOffset(0, 100);
+        this.player.setDepth(playerDepth);
+
+        this.playerInteractBox = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.playerInteractBox.body.setSize(70,50);
+        this.playerInteractBox.body.setOffset(0,120);
+        this.playerInteractBox.visible = false;
+        this.playerInteractBox.body.immovable = true;
+
+        // Created Room walls
+        this.walls = this.add.group();
+        this.topWall = this.add.tileSprite(0, (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.topWall);
+        this.topWall.body.immovable = true;
+        this.topWall.setDepth(envDepth);
+        this.walls.add(this.topWall);
+
+        this.botWall = this.add.tileSprite(0, 1000 - (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.botWall);
+        this.botWall.body.immovable = true;
+        this.botWall.setDepth(envDepth);
+        this.walls.add(this.botWall);
+
+        this.leftWall = this.add.tileSprite(100, (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.leftWall);
+        this.leftWall.body.immovable = true;
+        this.leftWall.setDepth(envDepth);
+        this.walls.add(this.leftWall);
+
+        this.rightWall = this.add.tileSprite(1800 - (tileSize*SCALE), (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.rightWall);
+        this.rightWall.body.immovable = true;
+        this.rightWall.setDepth(envDepth);
+        this.walls.add(this.rightWall);
+
+        // Created music puzzle pieces
+        this.pieces = this.add.group();
+
+        this.piece1 = this.physics.add.sprite(450, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.piece1.name = "audio1";
+        this.piece1.setCollideWorldBounds(true);
+        this.pieces.add(this.piece1);
+
+        this.piece2 = this.physics.add.sprite(750, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.piece2.name = "audio2";
+        this.piece2.setCollideWorldBounds(true);
+        this.pieces.add(this.piece2);
+
+        this.piece3 = this.physics.add.sprite(1050, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.piece3.name = "audio3";
+        this.piece3.setCollideWorldBounds(true);
+        this.pieces.add(this.piece3);
+
+        this.piece4 = this.physics.add.sprite(1350, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.piece4.name = "audio4";
+        this.piece4.setCollideWorldBounds(true);
+        this.pieces.add(this.piece4);
+
+        // Create piece slots
+        this.pieceSlots = this.add.group();
+
+        this.pieceSlot1 = this.physics.add.sprite(750, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot1.body.immovable = true;
+        this.pieceSlot1.setCollideWorldBounds(true);
+        this.pieceSlots.add(this.pieceSlot1);
+
+        this.pieceSlot2 = this.physics.add.sprite(900, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot2.body.immovable = true;
+        this.pieceSlot2.setCollideWorldBounds(true);
+        this.pieceSlots.add(this.pieceSlot2);
+
+        this.pieceSlot3 = this.physics.add.sprite(1050, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot3.body.immovable = true;
+        this.pieceSlot3.setCollideWorldBounds(true);
+        this.pieceSlots.add(this.pieceSlot3);
+
+        this.pieceSlot4 = this.physics.add.sprite(1200, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot4.body.immovable = true;
+        this.pieceSlot4.setCollideWorldBounds(true);
+        this.pieceSlots.add(this.pieceSlot4);
+
+        // Create play button
+        this.playButton = this.physics.add.sprite(950, 450, 'Play').setOrigin(0.5).setScale(SCALE);
+        this.playButton.body.immovable = true;
+        
+        // Create reset button
+
+        // Create music play
+        const playNextAudio = () => {
+            if (this.musicSlots.length > 0) {
+              let audio = this.musicSlots.pop();
+              audio.play();
+                this.playedOrder.push(audio);
+        
+              audio.once('complete', () => {
+                playNextAudio(); // Call the local arrow function recursively
+              });
+            } else {
+                checkSuccess();
+            }
+        }
+
+        this.playMusic = (player, button) => {
+            if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.playing === false) {
+                console.log(this.musicSlots);
+              playNextAudio(); // Call the local arrow function to start playing the audio
+              this.playing = true;
+            }
+        };
+
+        this.physics.add.collider(this.player, this.walls);
+        this.physics.add.collider(this.player, this.pieceSlots);
+        this.physics.add.collider(this.pieces, this.walls, this.stopPushing, null, this);
+        this.physics.add.collider(this.pieces, this.pieces, this.pushPiece, null, this);
+        this.physics.add.collider(this.player, this.pieces, this.pushPiece, null, this);
+        this.physics.add.overlap(this.pieces, this.pieceSlots, this.slotPiece, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.playButton, this.playMusic, null, this)   
     }
 
     update() {
+        // Have interact hitbox follow player
+        this.playerInteractBox.x = this.player.x;
+        this.playerInteractBox.y = this.player.y;
 
+        // Y Movement
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W).isDown) {
+            // W key is currently being pressed
+            this.player.setVelocityY(-MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,50);
+            this.playerInteractBox.body.setOffset(0,50);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
+            // S key is currently being pressed
+            this.player.setVelocityY(MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,50);
+            this.playerInteractBox.body.setOffset(0,120);
+        }
+        else {
+            this.player.setVelocityY(0);
+        }
+        
+        // X Movement
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A).isDown) {
+            // A key is currently being pressed
+            this.player.setVelocityX(-MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,120);
+            this.playerInteractBox.body.setOffset(-70,0);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
+            // D key is currently being pressed
+            this.player.setVelocityX(MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,120);
+            this.playerInteractBox.body.setOffset(70,0);
+        }
+        else {
+            this.player.setVelocityX(0);
+        }
+
+        this.pieces.children.each((piece) => {
+            piece.setVelocityX(0);
+            piece.setVelocityY(0);
+        });
+    }
+
+    pushPiece(player, piece) {
+        if (player.body.touching.left) {
+            piece.setVelocityX(player.body.velocity.x);
+        } else if (player.body.touching.right) {
+            piece.setVelocityX(player.body.velocity.x);
+        } else if (player.body.touching.up) {
+            piece.setVelocityY(player.body.velocity.y);
+        } else if (player.body.touching.down) {
+            piece.setVelocityY(player.body.velocity.y);
+        }
+    }
+
+    stopPushing(piece, wall) {
+        piece.setPushable(false);
+    }
+
+    slotPiece(piece, slot) {
+        piece.x = slot.body.x;
+        piece.y = slot.body.y;
+        piece.body.immovable = true;
+        piece.body.enable = false;
+        this.musicSlots.push(this[piece.name]);
+    }
+
+    resetPieces() {
+        this.musicSlots = [];
+    }
+
+    checkSuccess() {
+        
     }
 }
