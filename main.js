@@ -7,6 +7,10 @@ const playerDepth = 1;
 const envDepth = -1;
 let inventory = [];
 let pedastalArtifacts = [false, false, false, false];
+let level1Complete = false;
+let level2Complete = false;
+let level3Complete = false;
+let level4Complete = false;
 
 const game = new Phaser.Game({
     scale: {

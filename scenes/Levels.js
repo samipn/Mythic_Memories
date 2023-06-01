@@ -268,26 +268,24 @@ class MusicPuzzle extends Phaser.Scene {
     }
     preload() {
         this.load.path = "./assets/";		
-        this.load.image('Beta Apollo', 'BetaApollo.png')
-        this.load.image('Dirt', 'Dirt.png')
-        this.load.image('Door', 'Door.png')
-        this.load.image('Bow', 'pizzarolls.png')
-        this.load.image('Play', 'Play.png')
+        this.load.image('Play', 'Play.png');
+        this.load.image('Reset', 'Reset.png');
         this.load.audio('audio1', '1.mp3');
         this.load.audio('audio2', '2.mp3');
         this.load.audio('audio3', '3.mp3');
         this.load.audio('audio4', '4.mp3');
     }
     create() {
-        this.playing = false;
-        this.musicSlots = [];
-        this.playedOrder = [];
-
         // Create audio
+        this.audio0 = this.sound.add('audio1');
         this.audio1 = this.sound.add('audio1');
         this.audio2 = this.sound.add('audio2');
         this.audio3 = this.sound.add('audio3');
         this.audio4 = this.sound.add('audio4');
+
+        this.playing = false;
+        this.musicSlots = ['audio0', 'audio0', 'audio0', 'audio0'];
+        this.playedOrder = [];
         
         // Created Player
         this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
@@ -354,61 +352,78 @@ class MusicPuzzle extends Phaser.Scene {
         // Create piece slots
         this.pieceSlots = this.add.group();
 
-        this.pieceSlot1 = this.physics.add.sprite(750, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot1 = this.physics.add.sprite(735, 400, 'EmptySlot').setOrigin(0.5);
         this.pieceSlot1.body.immovable = true;
         this.pieceSlot1.setCollideWorldBounds(true);
         this.pieceSlots.add(this.pieceSlot1);
 
-        this.pieceSlot2 = this.physics.add.sprite(900, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot2 = this.physics.add.sprite(885, 400, 'EmptySlot').setOrigin(0.5);
         this.pieceSlot2.body.immovable = true;
         this.pieceSlot2.setCollideWorldBounds(true);
         this.pieceSlots.add(this.pieceSlot2);
 
-        this.pieceSlot3 = this.physics.add.sprite(1050, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot3 = this.physics.add.sprite(1035, 400, 'EmptySlot').setOrigin(0.5);
         this.pieceSlot3.body.immovable = true;
         this.pieceSlot3.setCollideWorldBounds(true);
         this.pieceSlots.add(this.pieceSlot3);
 
-        this.pieceSlot4 = this.physics.add.sprite(1200, 400, 'EmptySlot').setOrigin(0.5);
+        this.pieceSlot4 = this.physics.add.sprite(1185, 400, 'EmptySlot').setOrigin(0.5);
         this.pieceSlot4.body.immovable = true;
         this.pieceSlot4.setCollideWorldBounds(true);
         this.pieceSlots.add(this.pieceSlot4);
 
         // Create play button
-        this.playButton = this.physics.add.sprite(950, 450, 'Play').setOrigin(0.5).setScale(SCALE);
+        this.playButton = this.physics.add.sprite(1400, 400, 'Play').setOrigin(0.5).setScale(3);
         this.playButton.body.immovable = true;
         
         // Create reset button
+        this.resetButton = this.physics.add.sprite(550, 400, 'Reset').setOrigin(0.5).setScale(0.15);
+        this.resetButton.body.immovable = true;
 
         // Create music play
         const playNextAudio = () => {
+            console.log(this.musicSlots);
+            console.log(this.playedOrder);
             if (this.musicSlots.length > 0) {
-              let audio = this.musicSlots.pop();
-              audio.play();        
-              audio.once('complete', () => {
-                playNextAudio(); // Call the local arrow function recursively
-              });
+                let audioName = this.musicSlots.shift();
+                if(audioName != 'audio0') {
+                    let audio = this[audioName];
+                    audio.play();
+                    this.playedOrder.push(audioName);
+                    audio.once('complete', () => {
+                        playNextAudio(); // Call the local arrow function recursively
+                    });
+                } else {
+                    playNextAudio();
+                }
             } else {
-                checkSuccess();
+                this.checkSuccess();
             }
         }
 
         this.playMusic = (player, button) => {
-            if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.playing === false) {
-                console.log(this.musicSlots);
-                console.log(this.playedOrder);
+            if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.playing === false && level1Complete == false) {
               playNextAudio(); // Call the local arrow function to start playing the audio
               this.playing = true;
             }
         };
 
+        // Player Physics
         this.physics.add.collider(this.player, this.walls);
         this.physics.add.collider(this.player, this.pieceSlots);
+        this.physics.add.collider(this.player, this.playButton);
+        this.physics.add.collider(this.player, this.resetButton);
+        this.physics.add.collider(this.player, this.pieces, this.pushPiece, null, this);
+
+        // Piece Physics
         this.physics.add.collider(this.pieces, this.walls, this.stopPushing, null, this);
         this.physics.add.collider(this.pieces, this.pieces, this.pushPiece, null, this);
-        this.physics.add.collider(this.player, this.pieces, this.pushPiece, null, this);
         this.physics.add.overlap(this.pieces, this.pieceSlots, this.slotPiece, null, this);
-        this.physics.add.overlap(this.playerInteractBox, this.playButton, this.playMusic, null, this)   
+
+        // playerHitbox Physics
+        this.physics.add.overlap(this.playerInteractBox, this.pieces, this.playFragment, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.playButton, this.playMusic, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.resetButton, this.resetPieces, null, this);
     }
 
     update() {
@@ -477,15 +492,71 @@ class MusicPuzzle extends Phaser.Scene {
         piece.y = slot.body.y;
         piece.body.immovable = true;
         piece.body.enable = false;
-        this.musicSlots.push(this[piece.name]);
-        this.playedOrder.push(piece.name);
+        if(slot == this.pieceSlot1) {
+            this.musicSlots[0] = piece.name;
+        }
+        else if(slot == this.pieceSlot2) {
+            this.musicSlots[1] = piece.name;
+        }
+        else if(slot == this.pieceSlot3) {   
+            this.musicSlots[2] = piece.name;  
+        }
+        else if(slot == this.pieceSlot4) {
+            this.musicSlots[3] = piece.name;
+        }
+        console.log(this.musicSlots);
     }
 
     resetPieces() {
-        this.musicSlots = [];
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && level1Complete == false) {
+            this.playedOrder = [];
+            this.musicSlots = ['audio0', 'audio0', 'audio0', 'audio0'];
+            this.playing = false;
+            let pieceX = 450;
+            let pieceY = 700;
+            this.pieces.children.each((piece) => {
+                piece.x = pieceX;
+                piece.y = pieceY;
+                piece.body.immovable = false;
+                piece.body.enable = true;
+                piece.setPushable(true);
+                pieceX += 300;
+            });
+        }
+    }
+
+    playFragment(hitbox, piece) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.playing == false && level1Complete == false) {
+            this.playing = true;
+            let audio = this[piece.name];
+            audio.play();
+            audio.once('complete', () => {
+                this.playing = false;
+            });
+
+        }
     }
 
     checkSuccess() {
-        
+        if(this.playedOrder.length == 4 && (this.playedOrder[0] == 'audio1' && this.playedOrder[1] == 'audio2' && this.playedOrder[2] == 'audio3' && this.playedOrder[3] == 'audio4')) {
+            level1Complete = true;
+            console.log("artifact piece spawns");
+            console.log("on pickup dialogue appears and diff character screen");
+            console.log("on exit of dialogue, player can walk back to central hub")
+        } else {
+            this.playedOrder = [];
+            this.musicSlots = ['audio0', 'audio0', 'audio0', 'audio0'];
+            this.playing = false;
+            let pieceX = 450;
+            let pieceY = 700;
+            this.pieces.children.each((piece) => {
+                piece.x = pieceX;
+                piece.y = pieceY;
+                piece.body.immovable = false;
+                piece.body.enable = true;
+                piece.setPushable(true);
+                pieceX += 300;
+            });
+        }
     }
 }
