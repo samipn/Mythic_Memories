@@ -4,12 +4,19 @@ class CentralHub extends Phaser.Scene {
     }
     preload() {
       this.load.path = "./assets/";		
-      this.load.image('Beta Apollo', 'BetaApollo.png')
-      this.load.image('Dirt', 'Dirt.png')
-      this.load.image('Door', 'Door.png')
-      this.load.image('Bow', 'pizzarolls.png')
+      this.load.image('Beta Apollo', 'BetaApollo.png');
+      this.load.image('Dirt', 'Dirt.png');
+      this.load.image('Door', 'Door.png');
+      this.load.image('Lyre', 'pizzarolls.png');
+      this.load.image('Bow', 'pizzarolls.png');
     }
     create() {
+        this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
+        this.inventoryArtifact.setDepth(objectDepth);
+        if(inventory.length > 0) {
+            this.inventoryArtifact.destroy();
+        }
+
         // Created Player
         this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
         this.player.setCollideWorldBounds(true);
@@ -127,7 +134,11 @@ class CentralHub extends Phaser.Scene {
         this.puzzledoors.add(this.puzzleDoor4);
 
         // Created artifacts
-        this.bow = this.add.sprite(450, 700, 'Bow').setOrigin(0.5,1);
+        this.lyre = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
+        this.lyre.setDepth(objectDepth);
+        this.lyre.visible = false;
+
+        this.bow = this.add.sprite(750, 675, 'Bow').setOrigin(0.5,1);
         this.bow.setDepth(objectDepth);
         this.bow.visible = false;
         
@@ -152,8 +163,11 @@ class CentralHub extends Phaser.Scene {
         this.pedastal4OverlapBody.body.immovable = true;
         this.pedastal4OverlapBody.visible = false;
 
+        // Inventory GUI
         this.updateInventory();
-        this.add.text(1000, 1000, "Inventory");
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
+        invRect.setDepth(envDepth);
+        this.add.text(1570, 820, "Inventory", {fontSize: 40});
 
         // Physics stuff
         this.physics.add.collider(this.player, this.walls);
@@ -185,7 +199,7 @@ class CentralHub extends Phaser.Scene {
         });
 
         if(pedastalArtifacts[0] == true) {
-            this.bow.visible = true;
+            this.lyre.visible = true;
         }
 
         // Have interact hitbox follow player
@@ -252,6 +266,8 @@ class CentralHub extends Phaser.Scene {
             if(inventory.length == 1) {
                 console.log("artifact placed on pedastal");
                 pedastalArtifacts[0] = true;
+                inventory.pop();
+                this.updateInventory();
             }
             else if(inventory.length < 1) {
                 console.log("You need to find something to place here");
@@ -263,10 +279,13 @@ class CentralHub extends Phaser.Scene {
     }
 
     updateInventory() {
-        console.log("we in");
-        this.artifact = this.add.sprite(1000,500, inventory[0]);
-        this.artifact.setDepth(objectDepth);
-        console.log(this.artifact);
+        if(inventory.length > 0) {
+            this.inventoryArtifact = this.add.sprite(1700,950, inventory[0]).setScale(3);
+            this.inventoryArtifact.setDepth(objectDepth);
+            console.log(this.inventoryArtifact);
+        } else {
+            this.inventoryArtifact.destroy();
+        }
     }
 }
 
@@ -284,6 +303,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.load.audio('audio4', '4.mp3');
     }
     create() {
+        this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
         // Create audio
         this.audio0 = this.sound.add('audio1');
         this.audio1 = this.sound.add('audio1');
@@ -430,7 +450,11 @@ class MusicPuzzle extends Phaser.Scene {
         this.lyre.body.enable = false;
         this.lyre.visible = false;
 
-        this.updateInventory;
+        // Inventory GUI
+        this.updateInventory();
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
+        invRect.setDepth(envDepth);
+        this.add.text(1570, 820, "Inventory", {fontSize: 40});
 
         // Player Physics
         this.physics.add.collider(this.player, this.walls);
@@ -595,7 +619,7 @@ class MusicPuzzle extends Phaser.Scene {
 
     pickUp () {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
-            inventory.push('Bow');
+            inventory.push('Lyre');
             this.lyre.body.enable = false;
             this.lyre.visible = false;
             this.updateInventory();
@@ -603,10 +627,13 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     updateInventory() {
-        console.log("we in");
-        this.artifact = this.add.sprite(1000,500, inventory[0]);
-        this.artifact.setDepth(objectDepth);
-        console.log(this.artifact);
+        if(inventory.length > 0) {
+            this.inventoryArtifact = this.add.sprite(1700,950, inventory[0]).setScale(3);
+            this.inventoryArtifact.setDepth(objectDepth);
+            console.log(this.inventoryArtifact);
+        } else {
+            this.inventoryArtifact.destroy();
+        }
     }
 
     interactDoor(player, door) {
