@@ -201,6 +201,9 @@ class CentralHub extends Phaser.Scene {
         if(pedastalArtifacts[0] == true) {
             this.lyre.visible = true;
         }
+        if(pedastalArtifacts[1] == true) {
+            this.bow.visible = true;
+        }
 
         // Have interact hitbox follow player
         this.playerInteractBox.x = this.player.x;
@@ -263,9 +266,23 @@ class CentralHub extends Phaser.Scene {
 
     interactPedastal(player, pedastal) {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedastal == this.pedastal1)) {
-            if(inventory.length == 1) {
+            if(inventory.length == 1 && inventory[0] == 'Lyre') {
                 console.log("artifact placed on pedastal");
                 pedastalArtifacts[0] = true;
+                inventory.pop();
+                this.updateInventory();
+            }
+            else if(inventory.length < 1) {
+                console.log("You need to find something to place here");
+            }
+            else {
+                console.log("You don't have the right artifact to place here");
+            }
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedastal == this.pedastal2)) {
+            if(inventory.length == 1 && inventory[0] == 'Bow') {
+                console.log("artifact placed on pedastal");
+                pedastalArtifacts[1] = true;
                 inventory.pop();
                 this.updateInventory();
             }
@@ -707,10 +724,12 @@ class BowPuzzle extends Phaser.Scene {
         this.load.path = "./assets/";		
         this.load.image('Arrow', 'BetaApollo.png');
         this.load.image('Dummy', 'BetaApollo.png');
-        this.load.image('Npc', 'BetaApollo.png')
+        this.load.image('Npc', 'BetaApollo.png');
     }
 
     create() {
+        this.inventoryArtifact = this.add.sprite(450, 675, 'Bow').setOrigin(0.5,1);
+
         this.targetsHit = 0;
         this.hasBow = false;
         
@@ -781,13 +800,28 @@ class BowPuzzle extends Phaser.Scene {
         this.Target4.setCollideWorldBounds(true);
         this.Targets.add(this.Target4);
 
+        // Create hub door
+        this.hubDoor = this.physics.add.sprite(game.config.width/2, 950, 'Door').setOrigin(0.5).setScale(3);
+        this.hubDoor.body.immovable = true;
+        this.hubDoor.body.setSize(30,60);
+        this.hubDoor.body.setOffset(35, 17);
+        this.hubDoor.setAngle(180);
+        this.hubDoor.setDepth(objectDepth);
+
         // Create NPC
         this.Npc = this.physics.add.sprite(1400, 700, 'Npc').setOrigin(0.5).setScale(1);
         this.Npc.body.immovable = true;
 
+        // Inventory GUI
+        this.updateInventory();
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
+        invRect.setDepth(envDepth);
+        this.add.text(1570, 820, "Inventory", {fontSize: 40});
+
         // Player Physics
         this.physics.add.collider(this.player, this.walls);
         this.physics.add.collider(this.player, this.Npc);
+        this.physics.add.overlap(this.player, this.hubDoor, this.interactDoor, null, this);
 
         // Arrow Physics
         this.physics.add.collider(this.ArrowGroup, this.walls, this.destroyArrow, null, this);
@@ -795,8 +829,6 @@ class BowPuzzle extends Phaser.Scene {
 
         // Player hitbox physics
         this.physics.add.overlap(this.playerInteractBox, this.Npc, this.npcInteract, null, this);
-
-        this.updateInventory;
     }
 
     addEvents() {
@@ -867,11 +899,12 @@ class BowPuzzle extends Phaser.Scene {
     // If press E on npc
     npcInteract() {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.hasBow == false) {
-            console.log("getting bow dialogue");
             this.hasBow = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.targetsHit == 4) {
-            console.log("finishing dialogue");
+            this.targetsHit += 1;
+            inventory.push('Bow');
+            this.updateInventory();
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.ArrowGroup.getFrameQuantity() == 0){
             this.ArrowGroup = new ArrowGroup(this);
@@ -880,12 +913,6 @@ class BowPuzzle extends Phaser.Scene {
             console.log("ur bad here are some more arrows");
         }
     }
-    //if E is down && hasBow == false
-    //  give bow
-    //else if E is down && 4 targets killed
-    //  level done
-    //else
-    //  give arrows
 
     destroyArrow(wall, arrow) {
         arrow.destroy();
@@ -895,5 +922,168 @@ class BowPuzzle extends Phaser.Scene {
         arrow.destroy();
         target.destroy();
         this.targetsHit += 1;
+    }
+
+    updateInventory() {
+        if(inventory.length > 0) {
+            this.inventoryArtifact = this.add.sprite(1700,950, inventory[0]).setScale(3);
+            this.inventoryArtifact.setDepth(objectDepth);
+            console.log(this.inventoryArtifact);
+        } else {
+            this.inventoryArtifact.destroy();
+        }
+    }
+
+    interactDoor(player, door) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+            this.cameras.main.fade(1000, 0, 0, 0);
+            this.time.delayedCall(1000, () => {
+                this.scene.start('centralhub');
+            });
+        }
+    }
+}
+
+class RiddlePuzzle extends Phaser.Scene {
+    constructor() {
+        super('riddlepuzzle');
+    }
+
+    preload() {
+        this.load.path = "./assets/";	
+        this.load.image('Npc', 'BetaApollo.png');	
+    }
+
+    create() {
+        // Created Player
+        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player.setCollideWorldBounds(true);
+        this.player.body.setSize(70,20);
+        this.player.body.setOffset(0, 100);
+        this.player.setDepth(playerDepth);
+    
+        this.playerInteractBox = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.playerInteractBox.body.setSize(70,50);
+        this.playerInteractBox.body.setOffset(0,120);
+        this.playerInteractBox.visible = false;
+        this.playerInteractBox.body.immovable = true;
+
+        // Created Room walls
+        this.walls = this.add.group();
+        this.topWall = this.add.tileSprite(0, (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.topWall);
+        this.topWall.body.immovable = true;
+        this.topWall.setDepth(envDepth);
+        this.walls.add(this.topWall);
+
+        this.botWall = this.add.tileSprite(0, 1000 - (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.botWall);
+        this.botWall.body.immovable = true;
+        this.botWall.setDepth(envDepth);
+        this.walls.add(this.botWall);
+
+        this.leftWall = this.add.tileSprite(100, (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.leftWall);
+        this.leftWall.body.immovable = true;
+        this.leftWall.setDepth(envDepth);
+        this.walls.add(this.leftWall);
+
+        this.rightWall = this.add.tileSprite(1800 - (tileSize*SCALE), (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.rightWall);
+        this.rightWall.body.immovable = true;
+        this.rightWall.setDepth(envDepth);
+        this.walls.add(this.rightWall);
+        
+        // Created Answer Buttons
+        this.answerButtons = this.add.group();
+
+        this.answerButtonA = this.physics.add.sprite(450, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonA.name = "A";
+        this.answerButtonA.body.immovable = true; 
+        this.answerButtons.add(this.answerButtonA);
+
+        this.answerButtonB = this.physics.add.sprite(750, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonB.name = "B";
+        this.answerButtonB.body.immovable = true; 
+        this.answerButtons.add(this.answerButtonB);
+
+        this.answerButtonC = this.physics.add.sprite(1050, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonC.name = "C";
+        this.answerButtonC.body.immovable = true; 
+        this.answerButtons.add(this.answerButtonC);
+
+        this.answerButtonD = this.physics.add.sprite(1350, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonD.name = "D";
+        this.answerButtonD.body.immovable = true; 
+        this.answerButtons.add(this.answerButtonD);
+
+        // Create NPC
+        this.Npc = this.physics.add.sprite(1600, 700, 'Npc').setOrigin(0.5).setScale(1);
+        this.Npc.body.immovable = true;
+
+        // Inventory GUI
+        //this.updateInventory();
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
+        invRect.setDepth(envDepth);
+        this.add.text(1570, 820, "Inventory", {fontSize: 40});
+
+        //Player physics
+        this.physics.add.collider(this.player, this.walls);
+        this.physics.add.collider(this.player, this.answerButtons);
+        this.physics.add.collider(this.player, this.Npc);
+
+        // Player hitbox physics
+        this.physics.add.overlap(this.playerInteractBox, this.Npc, this.npcInteract, null, this);
+    }
+
+    update() {
+        // Have interact hitbox follow player
+        this.playerInteractBox.x = this.player.x;
+        this.playerInteractBox.y = this.player.y;
+
+        // Y Movement
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W).isDown) {
+            // W key is currently being pressed
+            this.player.setVelocityY(-MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,50);
+            this.playerInteractBox.body.setOffset(0,50);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
+            // S key is currently being pressed
+            this.player.setVelocityY(MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,50);
+            this.playerInteractBox.body.setOffset(0,120);
+        }
+        else {
+            this.player.setVelocityY(0);
+        }
+        
+        // X Movement
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A).isDown) {
+            // A key is currently being pressed
+            this.player.setVelocityX(-MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,120);
+            this.playerInteractBox.body.setOffset(-70,0);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
+            // D key is currently being pressed
+            this.player.setVelocityX(MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,120);
+            this.playerInteractBox.body.setOffset(70,0);
+        }
+        else {
+            this.player.setVelocityX(0);
+        }    
+    }
+
+    npcInteract() {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+            this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
+            //this.physics.add.collider(this.player, this.chatBubble);
+            this.npcText = this.add.text(700, 400, "In order to complete this puzzle \nyou must answer my riddles", {
+                fontSize: 40,
+                fill: '#000000',
+            });
+        }
     }
 }
