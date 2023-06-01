@@ -30,6 +30,6 @@ const game = new Phaser.Game({
         }
     },
     backgroundColor: 0x87CEEB,
-    scene: [CentralHub, MusicPuzzle],
+    scene: [CentralHub, MusicPuzzle, BowPuzzle],
     title: "Mythic Memories"
 });
