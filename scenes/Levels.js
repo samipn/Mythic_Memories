@@ -18,7 +18,7 @@ class CentralHub extends Phaser.Scene {
         }
 
         // Created Player
-        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo').setOrigin(0.5);
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(57,20);
         this.player.body.setOffset(7, 135);
@@ -297,7 +297,7 @@ class CentralHub extends Phaser.Scene {
 
     updateInventory() {
         if(inventory.length > 0) {
-            this.inventoryArtifact = this.add.sprite(1700,950, inventory[0]).setScale(1.5);
+            this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
             this.inventoryArtifact.setDepth(objectDepth);
             console.log(this.inventoryArtifact);
         } else {
@@ -338,7 +338,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.playedOrder = [];
         
         // Created Player
-        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player = this.physics.add.sprite(game.config.width/2, 800, 'Beta Apollo');
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(57,20);
         this.player.body.setOffset(7, 135);
@@ -379,24 +379,28 @@ class MusicPuzzle extends Phaser.Scene {
         // Created music puzzle pieces
         this.pieces = this.add.group();
 
-        this.piece1 = this.physics.add.sprite(450, 700, 'mn1').setOrigin(0.5).setScale(SCALE);
+        this.piece1 = this.physics.add.sprite(450, 700, 'mn1').setOrigin(0.5);
         this.piece1.name = "audio1";
         this.piece1.setCollideWorldBounds(true);
+        this.piece1.setDepth(objectDepth);
         this.pieces.add(this.piece1);
 
-        this.piece2 = this.physics.add.sprite(750, 700, 'mn2').setOrigin(0.5).setScale(SCALE);
+        this.piece2 = this.physics.add.sprite(750, 700, 'mn2').setOrigin(0.5);
         this.piece2.name = "audio2";
         this.piece2.setCollideWorldBounds(true);
+        this.piece2.setDepth(objectDepth);
         this.pieces.add(this.piece2);
 
-        this.piece3 = this.physics.add.sprite(1050, 700, 'mn3').setOrigin(0.5).setScale(SCALE);
+        this.piece3 = this.physics.add.sprite(1050, 700, 'mn3').setOrigin(0.5);
         this.piece3.name = "audio3";
         this.piece3.setCollideWorldBounds(true);
+        this.piece3.setDepth(objectDepth);
         this.pieces.add(this.piece3);
 
-        this.piece4 = this.physics.add.sprite(1350, 700, 'mn4').setOrigin(0.5).setScale(SCALE);
+        this.piece4 = this.physics.add.sprite(1350, 700, 'mn4').setOrigin(0.5).setScale(0.7);
         this.piece4.name = "audio4";
         this.piece4.setCollideWorldBounds(true);
+        this.piece4.setDepth(objectDepth);
         this.pieces.add(this.piece4);
 
         // Create piece slots
@@ -405,21 +409,25 @@ class MusicPuzzle extends Phaser.Scene {
         this.pieceSlot1 = this.physics.add.sprite(735, 400, 'mb').setOrigin(0.5);
         this.pieceSlot1.body.immovable = true;
         this.pieceSlot1.setCollideWorldBounds(true);
+        this.pieceSlot1.setDepth(envDepth);
         this.pieceSlots.add(this.pieceSlot1);
 
         this.pieceSlot2 = this.physics.add.sprite(885, 400, 'mb').setOrigin(0.5);
         this.pieceSlot2.body.immovable = true;
         this.pieceSlot2.setCollideWorldBounds(true);
+        this.pieceSlot2.setDepth(envDepth);
         this.pieceSlots.add(this.pieceSlot2);
 
         this.pieceSlot3 = this.physics.add.sprite(1035, 400, 'mb').setOrigin(0.5);
         this.pieceSlot3.body.immovable = true;
         this.pieceSlot3.setCollideWorldBounds(true);
+        this.pieceSlot3.setDepth(envDepth);
         this.pieceSlots.add(this.pieceSlot3);
 
         this.pieceSlot4 = this.physics.add.sprite(1185, 400, 'mb').setOrigin(0.5);
         this.pieceSlot4.body.immovable = true;
         this.pieceSlot4.setCollideWorldBounds(true);
+        this.pieceSlot4.setDepth(envDepth);
         this.pieceSlots.add(this.pieceSlot4);
 
         // Create hub door
@@ -561,8 +569,8 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     slotPiece(piece, slot) {
-        piece.x = slot.body.x;
-        piece.y = slot.body.y;
+        piece.x = slot.body.x + 40;
+        piece.y = slot.body.y + 50;
         piece.body.immovable = true;
         piece.body.enable = false;
         if(slot == this.pieceSlot1) {
@@ -650,7 +658,7 @@ class MusicPuzzle extends Phaser.Scene {
 
     updateInventory() {
         if(inventory.length > 0) {
-            this.inventoryArtifact = this.add.sprite(1700,950, inventory[0]).setScale(1.5);
+            this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
             this.inventoryArtifact.setDepth(objectDepth);
             console.log(this.inventoryArtifact);
         } else {
@@ -681,8 +689,9 @@ class Arrow extends Phaser.Physics.Arcade.Sprite
 
 		this.setActive(true);
 		this.setVisible(true);
-
-		this.setVelocityY(-400);
+        this.setDepth(objectDepth);
+        this.setScale(0.3);
+        this.setVelocityY(-400);
 	}
 
 }
@@ -717,7 +726,6 @@ class ArrowGroup extends Phaser.Physics.Arcade.Group
     }
 }
 
-
 class BowPuzzle extends Phaser.Scene {
     constructor() {
         super('bowpuzzle');
@@ -727,9 +735,10 @@ class BowPuzzle extends Phaser.Scene {
 
     preload() {
         this.load.path = "./assets/";		
-        this.load.image('Arrow', 'BetaApollo.png');
-        this.load.image('Dummy', 'BetaApollo.png');
-        this.load.image('Npc', 'BetaApollo.png');
+        this.load.image('Arrow', 'Arrow.png');
+        this.load.image('Dummy', 'Target.png');
+        this.load.image('Npc', 'NPC 1.png');
+        this.load.image('Fence', 'Fence.png')
     }
 
     create() {
@@ -740,11 +749,10 @@ class BowPuzzle extends Phaser.Scene {
         
         //Create Arrow
         this.ArrowGroup = new ArrowGroup(this);
-        
         this.addEvents();
 
         // Created Player
-        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player = this.physics.add.sprite(game.config.width/2, 800, 'Beta Apollo');
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(57,20);
         this.player.body.setOffset(7, 135);
@@ -782,25 +790,31 @@ class BowPuzzle extends Phaser.Scene {
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
 
+        // Create fence
+        this.fence = this.add.tileSprite(100 + (tileSize*SCALE), 750 - (tileSize*SCALE), tileSize * 14.25, tileSize, 'Fence').setScale(SCALE).setOrigin(0);
+        this.physics.add.existing(this.fence);
+        this.fence.body.immovable = true;
+        this.fence.setDepth(envDepth)
+
         // Create targets
         this.Targets = this.add.group();
 
-        this.Target1 = this.physics.add.sprite(735, 400, 'Dummy').setOrigin(0.5);
+        this.Target1 = this.physics.add.sprite(450, 300, 'Dummy').setOrigin(0.5).setScale(SCALE*0.9);
         this.Target1.body.immovable = true;
         this.Target1.setCollideWorldBounds(true);
         this.Targets.add(this.Target1);
 
-        this.Target2 = this.physics.add.sprite(885, 400, 'Dummy').setOrigin(0.5);
+        this.Target2 = this.physics.add.sprite(750, 300, 'Dummy').setOrigin(0.5).setScale(SCALE*0.9);
         this.Target2.body.immovable = true;
         this.Target2.setCollideWorldBounds(true);
         this.Targets.add(this.Target2);
 
-        this.Target3 = this.physics.add.sprite(1035, 400, 'Dummy').setOrigin(0.5);
+        this.Target3 = this.physics.add.sprite(1050, 300, 'Dummy').setOrigin(0.5).setScale(SCALE*0.9);
         this.Target3.body.immovable = true;
         this.Target3.setCollideWorldBounds(true);
         this.Targets.add(this.Target3);
 
-        this.Target4 = this.physics.add.sprite(1185, 400, 'Dummy').setOrigin(0.5);
+        this.Target4 = this.physics.add.sprite(1350, 300, 'Dummy').setOrigin(0.5).setScale(SCALE*0.9);
         this.Target4.body.immovable = true;
         this.Target4.setCollideWorldBounds(true);
         this.Targets.add(this.Target4);
@@ -814,7 +828,8 @@ class BowPuzzle extends Phaser.Scene {
         this.hubDoor.setDepth(objectDepth);
 
         // Create NPC
-        this.Npc = this.physics.add.sprite(1400, 700, 'Npc').setOrigin(0.5).setScale(1);
+        this.Npc = this.physics.add.sprite(270, 800, 'Npc').setOrigin(0.5).setScale(0.7);
+        this.Npc.setDepth(envDepth);
         this.Npc.body.immovable = true;
 
         // Inventory GUI
@@ -826,10 +841,11 @@ class BowPuzzle extends Phaser.Scene {
         // Player Physics
         this.physics.add.collider(this.player, this.walls);
         this.physics.add.collider(this.player, this.Npc);
+        this.physics.add.collider(this.player, this.fence);
         this.physics.add.overlap(this.player, this.hubDoor, this.interactDoor, null, this);
 
         // Arrow Physics
-        this.physics.add.collider(this.ArrowGroup, this.walls, this.destroyArrow, null, this);
+        this.physics.add.collider(this.ArrowGroup, this.walls);
         this.physics.add.collider(this.ArrowGroup, this.Targets, this.destroyTarget, null, this);
 
         // Player hitbox physics
@@ -919,10 +935,6 @@ class BowPuzzle extends Phaser.Scene {
         }
     }
 
-    destroyArrow(wall, arrow) {
-        arrow.destroy();
-    }
-
     destroyTarget(target, arrow) {
         arrow.destroy();
         target.destroy();
@@ -931,7 +943,7 @@ class BowPuzzle extends Phaser.Scene {
 
     updateInventory() {
         if(inventory.length > 0) {
-            this.inventoryArtifact = this.add.sprite(1700,950, inventory[0]).setScale(3);
+            this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
             this.inventoryArtifact.setDepth(objectDepth);
             console.log(this.inventoryArtifact);
         } else {
@@ -959,7 +971,11 @@ class RiddlePuzzle extends Phaser.Scene {
         this.load.image('Npc', 'BetaApollo.png');	
     }
 
-    create() {
+    create() {     
+        this.currentQuestion = 0;
+        this.answerArray = [];
+        this.canAnswer = false;
+
         // Created Player
         this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
         this.player.setCollideWorldBounds(true);
@@ -999,6 +1015,14 @@ class RiddlePuzzle extends Phaser.Scene {
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
         
+        // Create hub door
+        this.hubDoor = this.physics.add.sprite(game.config.width/2, 950, 'Door').setOrigin(0.5).setScale(3);
+        this.hubDoor.body.immovable = true;
+        this.hubDoor.body.setSize(30,60);
+        this.hubDoor.body.setOffset(35, 17);
+        this.hubDoor.setAngle(180);
+        this.hubDoor.setDepth(objectDepth);
+        
         // Created Answer Buttons
         this.answerButtons = this.add.group();
 
@@ -1026,6 +1050,34 @@ class RiddlePuzzle extends Phaser.Scene {
         this.Npc = this.physics.add.sprite(1600, 700, 'Npc').setOrigin(0.5).setScale(1);
         this.Npc.body.immovable = true;
 
+        // Create riddles
+        this.npcText = this.add.text(225, 220, "In order to complete this puzzle you must answer my riddles", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.npcText.visible = false;
+        
+        this.riddle1 = this.add.text(225, 220, "What musical instrument doesn't tell the truth? \nA. Lute \nB. Lyre \nC. Harp \nD. Piano", {
+                fontSize: 40,
+                fill: '#000000',
+        });
+        this.riddle1.visible = false;
+        this.riddle1.setDepth(objectDepth);
+
+        this.riddle2 = this.add.text(225, 220, "Though made of wood, I hold strength untold. \nWith tension and release, my purpose unfolds. \nA. Bow \nB. Spoon \nC. Chair \nD. Door", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.riddle2.visible = false;
+        this.riddle2.setDepth(objectDepth);
+
+        this.riddle3 = this.add.text(225, 220, "What can bring back the dead; make you cry, make you laugh, \nmake you young; is born in an instant, yet lasts a lifetime. \nA. Time \nB. Potion \nC. Memory \nD. Grim Reaper", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.riddle3.visible = false;
+        this.riddle3.setDepth(objectDepth);
+
         // Inventory GUI
         //this.updateInventory();
         let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
@@ -1039,6 +1091,8 @@ class RiddlePuzzle extends Phaser.Scene {
 
         // Player hitbox physics
         this.physics.add.overlap(this.playerInteractBox, this.Npc, this.npcInteract, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.answerButtons, this.checkAnswer, null, this);
+        this.physics.add.overlap(this.player, this.hubDoor, this.interactDoor, null, this);
     }
 
     update() {
@@ -1082,15 +1136,85 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     npcInteract() {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 0) {
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;
-            this.npcText = this.add.text(700, 400, "In order to complete this puzzle \nyou must answer my riddles", {
-                fontSize: 40,
-                fill: '#000000',
-            });
+            this.chatBubble.setDepth(envDepth);
+            this.npcText.visible = true;
             this.physics.add.collider(this.player, this.chatBubble);
+            this.time.delayedCall(5000, () => {
+                this.currentQuestion = 1;
+                this.canAnswer = true;
+                this.npcText.destroy();
+                this.riddle1.visible = true;
+            });
+            // npcInteract FINSIHED DEAD FIRST QUESTION IS DONE
+        }
+    }
+
+    checkAnswer(hitbox, answer) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 1 && this.canAnswer == true) {
+            this.answerArray.push(answer.name);
+            this.riddle1.visible = false;
+            this.canAnswer = false;
+            this.time.delayedCall(500, () => {
+                this.currentQuestion = 2;
+                this.canAnswer = true;
+                this.riddle2.visible = true;
+            });
+            console.log(this.answerArray);
+            // SECOND
+        } 
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 2 && this.canAnswer == true) {
+            this.answerArray.push(answer.name);
+            this.riddle2.visible = false;
+            this.canAnswer = false;
+            this.time.delayedCall(500, () => {
+                this.currentQuestion = 3;
+                this.canAnswer = true;
+                this.riddle3.visible = true;
+            });
+            console.log(this.answerArray);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 3 && this.canAnswer == true) {
+            this.answerArray.push(answer.name);
+            this.riddle3.visible = false;
+            this.canAnswer = false;
+            if (this.answerArray[0] == 'B' && this.answerArray[1] == 'A' && this.answerArray[2] == 'C') {
+                console.log("npc dialogue, create artifact, spawn artifact, look musicpuzzle");
+                console.log("flashback, exit room")
+            }
+            else {
+                // retry bozo
+                console.log("You FAILED");
+                this.time.delayedCall(500, () => {
+                    this.currentQuestion = 1;
+                    this.riddle1.visible = true;
+                    this.canAnswer = true;
+                    this.answerArray = [];
+                });
+            }
+            console.log(this.answerArray);
+        }
+    }
+
+    interactDoor(player, door) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+            this.cameras.main.fade(1000, 0, 0, 0);
+            this.time.delayedCall(1000, () => {
+                this.scene.start('centralhub');
+            });
+        }
+    }
+
+    updateInventory() {
+        if(inventory.length > 0) {
+            this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
+            this.inventoryArtifact.setDepth(objectDepth);
+            console.log(this.inventoryArtifact);
+        } else {
+            this.inventoryArtifact.destroy();
         }
     }
 }
