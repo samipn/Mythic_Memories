@@ -17,7 +17,9 @@ class MusicPuzzle extends Phaser.Scene {
         this.load.image('mb', 'Music Box.png')
     }
     create() {
+        this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
+
         // Create audio
         this.audio0 = this.sound.add('audio1');
         this.audio1 = this.sound.add('audio1');
@@ -42,6 +44,9 @@ class MusicPuzzle extends Phaser.Scene {
         this.playerInteractBox.visible = false;
         this.playerInteractBox.body.immovable = true;
 
+        // Make group for all collidable objects
+        this.objects = this.add.group();
+
         // Created Room walls
         this.walls = this.add.group();
         this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
@@ -58,7 +63,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.botWall.body.immovable = true;
         this.botWall.setDepth(envDepth);
         this.walls.add(this.botWall);
-        // this.objects.add(this.botWall);
+        this.objects.add(this.botWall);
 
         this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.leftWall);
@@ -75,31 +80,34 @@ class MusicPuzzle extends Phaser.Scene {
         this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
         this.floor.setDepth(-3);
 
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(-3);
+
         // Created music puzzle pieces
         this.pieces = this.add.group();
 
         this.piece1 = this.physics.add.sprite(450, 700, 'mn1').setOrigin(0.5);
         this.piece1.name = "audio1";
         this.piece1.setCollideWorldBounds(true);
-        this.piece1.setDepth(objectDepth);
+        this.piece1.setDepth(envDepth);
         this.pieces.add(this.piece1);
 
         this.piece2 = this.physics.add.sprite(750, 700, 'mn2').setOrigin(0.5);
         this.piece2.name = "audio2";
         this.piece2.setCollideWorldBounds(true);
-        this.piece2.setDepth(objectDepth);
+        this.piece2.setDepth(envDepth);
         this.pieces.add(this.piece2);
 
         this.piece3 = this.physics.add.sprite(1050, 700, 'mn3').setOrigin(0.5);
         this.piece3.name = "audio3";
         this.piece3.setCollideWorldBounds(true);
-        this.piece3.setDepth(objectDepth);
+        this.piece3.setDepth(envDepth);
         this.pieces.add(this.piece3);
 
         this.piece4 = this.physics.add.sprite(1350, 700, 'mn4').setOrigin(0.5).setScale(0.7);
         this.piece4.name = "audio4";
         this.piece4.setCollideWorldBounds(true);
-        this.piece4.setDepth(objectDepth);
+        this.piece4.setDepth(envDepth);
         this.pieces.add(this.piece4);
 
         // Create piece slots
@@ -108,33 +116,32 @@ class MusicPuzzle extends Phaser.Scene {
         this.pieceSlot1 = this.physics.add.sprite(735, 400, 'mb').setOrigin(0.5);
         this.pieceSlot1.body.immovable = true;
         this.pieceSlot1.setCollideWorldBounds(true);
-        this.pieceSlot1.setDepth(envDepth);
+        this.pieceSlot1.setDepth(-1);
         this.pieceSlots.add(this.pieceSlot1);
 
         this.pieceSlot2 = this.physics.add.sprite(885, 400, 'mb').setOrigin(0.5);
         this.pieceSlot2.body.immovable = true;
         this.pieceSlot2.setCollideWorldBounds(true);
-        this.pieceSlot2.setDepth(envDepth);
+        this.pieceSlot2.setDepth(-1);
         this.pieceSlots.add(this.pieceSlot2);
 
         this.pieceSlot3 = this.physics.add.sprite(1035, 400, 'mb').setOrigin(0.5);
         this.pieceSlot3.body.immovable = true;
         this.pieceSlot3.setCollideWorldBounds(true);
-        this.pieceSlot3.setDepth(envDepth);
+        this.pieceSlot3.setDepth(-1);
         this.pieceSlots.add(this.pieceSlot3);
 
         this.pieceSlot4 = this.physics.add.sprite(1185, 400, 'mb').setOrigin(0.5);
         this.pieceSlot4.body.immovable = true;
         this.pieceSlot4.setCollideWorldBounds(true);
-        this.pieceSlot4.setDepth(envDepth);
+        this.pieceSlot4.setDepth(-1);
         this.pieceSlots.add(this.pieceSlot4);
 
         // Create hub door
-        this.hubDoor = this.physics.add.sprite(game.config.width/2, 950, 'Door').setOrigin(0.5).setScale(3);
+        this.hubDoor = this.physics.add.sprite(game.config.width/2, 940, 'Door').setOrigin(0.5).setScale(4);
         this.hubDoor.body.immovable = true;
         this.hubDoor.body.setSize(30,60);
         this.hubDoor.body.setOffset(35, 17);
-        this.hubDoor.setAngle(180);
         this.hubDoor.setDepth(objectDepth);
 
         // Create play button
@@ -167,7 +174,7 @@ class MusicPuzzle extends Phaser.Scene {
         }
 
         this.playMusic = (player, button) => {
-            if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (this.playing === false) && (level1Complete == false) && (this.musicSlots.length > 0)) {
+            if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)) && (this.playing === false) && (level1Complete == false) && (this.musicSlots.length > 0)) {
               playNextAudio(); // Call the local arrow function to start playing the audio
               this.playing = true;
             }
@@ -178,12 +185,20 @@ class MusicPuzzle extends Phaser.Scene {
         this.lyre.body.immovable = true;
         this.lyre.body.enable = false;
         this.lyre.visible = false;
+        
+        // Create overlap hitboxes 
+        this.botWallOverlapBody = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.physics.add.existing(this.botWallOverlapBody);
+        this.botWallOverlapBody.setDepth(-2);
+        this.botWallOverlapBody.body.immovable = true;
+        this.botWallOverlapBody.visible = false;
 
         // Inventory GUI
         this.updateInventory();
-        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
-        invRect.setDepth(envDepth);
-        this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x136207);
+        let invText = this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        invRect.setDepth(invDepth);
+        invText.setDepth(invDepth);
 
         // Player Physics
         this.physics.add.collider(this.player, this.walls);
@@ -207,6 +222,25 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     update() {
+        // Hacky overlap detection
+        this.objects.children.each((object) => {
+            
+            // slap on OverlapBody to end of object (convention for overlap vs object collision)
+            let dynamicVariableName = object.name + "OverlapBody";
+            let dynamicVariable = this[dynamicVariableName];
+            // check if its inside object using intersection area to prevent colliding triggers
+            let intersection = Phaser.Geom.Rectangle.Intersection(this.player.body, dynamicVariable.body);
+            let intersectionArea = Phaser.Geom.Rectangle.Area(intersection);
+            // dynamically set depths
+            if (intersectionArea > 0) {
+                object.alpha = 0.7;
+                object.setDepth(objectDepth);
+            } else{
+                object.alpha = 1;
+                object.setDepth(envDepth);
+            }
+        });
+
         // Have interact hitbox follow player
         this.playerInteractBox.x = this.player.x;
         this.playerInteractBox.y = this.player.y;
@@ -288,7 +322,7 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     resetPieces() {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && level1Complete == false) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)) && level1Complete == false) {
             this.playedOrder = [];
             this.musicSlots = ['audio0', 'audio0', 'audio0', 'audio0'];
             this.playing = false;
@@ -310,7 +344,7 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     playFragment(hitbox, piece) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.playing == false && level1Complete == false) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)) && this.playing == false && level1Complete == false) {
             this.playing = true;
             let audio = this[piece.name];
             audio.play();
@@ -347,7 +381,7 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     pickUp () {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
             inventory.push('Lyre');
             this.lyre.body.enable = false;
             this.lyre.visible = false;
@@ -358,7 +392,7 @@ class MusicPuzzle extends Phaser.Scene {
     updateInventory() {
         if(inventory.length > 0) {
             this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
-            this.inventoryArtifact.setDepth(objectDepth);
+            this.inventoryArtifact.setDepth(invDepth);
             console.log(this.inventoryArtifact);
         } else {
             this.inventoryArtifact.destroy();
@@ -366,7 +400,7 @@ class MusicPuzzle extends Phaser.Scene {
     }
 
     interactDoor(player, door) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
             this.cameras.main.fade(1000, 0, 0, 0);
             this.time.delayedCall(1000, () => {
                 this.scene.start('centralhub');

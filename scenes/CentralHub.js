@@ -15,19 +15,18 @@ class CentralHub extends Phaser.Scene {
       this.load.image('Lyre', 'Lyre.png');
       this.load.image('Bow', 'Bow.png');
       this.load.image('Scroll', 'Scroll.png');
+      this.load.image('Crow', 'Crow.png');
     }
     create() {
+        this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
         this.inventoryArtifact.setDepth(objectDepth);
         if(inventory.length > 0) {
             this.inventoryArtifact.destroy();
         }
 
-        // Make group for all collidable objects
-        this.objects = this.add.group();
-
         // Created Player
-        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo').setOrigin(0.5);
+        this.player = this.physics.add.sprite(900, 400, 'Beta Apollo').setOrigin(0.5);
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(57,20);
         this.player.body.setOffset(7, 135);
@@ -38,6 +37,9 @@ class CentralHub extends Phaser.Scene {
         this.playerInteractBox.body.setOffset(7, 135);
         this.playerInteractBox.visible = false;
         this.playerInteractBox.body.immovable = true;
+
+        // Make group for all collidable objects
+        this.objects = this.add.group();
 
         // Created Room walls
         this.walls = this.add.group();
@@ -159,6 +161,10 @@ class CentralHub extends Phaser.Scene {
         this.scroll = this.add.sprite(1050, 650, 'Scroll').setOrigin(0.5,1);
         this.scroll.setDepth(objectDepth);
         this.scroll.visible = false;
+
+        this.crow = this.add.sprite(1350, 650, 'Crow').setOrigin(0.5,1);
+        this.crow.setDepth(objectDepth);
+        this.crow.visible = false;
         
         // Created overlap hitboxes
         this.pedestal1OverlapBody = this.add.sprite(this.pedestal1.x, this.pedestal1.y,'Pedestal').setOrigin(0.5);
@@ -190,9 +196,9 @@ class CentralHub extends Phaser.Scene {
         // Inventory GUI
         this.updateInventory();
         let invRect = this.add.rectangle(1750, 950, 400, 300, 0x136207);
-        invRect.setDepth(3);
         let invText = this.add.text(1570, 820, "Inventory", {fontSize: 40});
-        invText.setDepth(4);
+        invRect.setDepth(invDepth);
+        invText.setDepth(invDepth);
 
         // Physics stuff
         this.physics.add.collider(this.player, this.walls);
@@ -228,6 +234,9 @@ class CentralHub extends Phaser.Scene {
         }
         if(pedestalArtifacts[2] == true) {
             this.scroll.visible = true;
+        }
+        if(pedestalArtifacts[3] == true) {
+            this.crow.visible = true;
         }
 
         // Have interact hitbox follow player
@@ -270,7 +279,7 @@ class CentralHub extends Phaser.Scene {
     }
 
     interactDoor(player, door) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
             this.cameras.main.fade(1000, 0, 0, 0);
             this.time.delayedCall(1000, () => {
                 if(door == this.puzzleDoor1) {
@@ -290,7 +299,8 @@ class CentralHub extends Phaser.Scene {
     }
 
     interactPedestal(player, pedestal) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedestal == this.pedestal1)) {
+        let eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
+        if (eKey && (pedestal == this.pedestal1)) {
             if(inventory.length == 1 && inventory[0] == 'Lyre') {
                 console.log("artifact placed on pedestal");
                 pedestalArtifacts[0] = true;
@@ -304,7 +314,7 @@ class CentralHub extends Phaser.Scene {
                 console.log("You don't have the right artifact to place here");
             }
         }
-        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedestal == this.pedestal2)) {
+        else if (eKey && (pedestal == this.pedestal2)) {
             if(inventory.length == 1 && inventory[0] == 'Bow') {
                 console.log("artifact placed on pedestal");
                 pedestalArtifacts[1] = true;
@@ -318,10 +328,25 @@ class CentralHub extends Phaser.Scene {
                 console.log("You don't have the right artifact to place here");
             }
         }
-        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedestal == this.pedestal3)) {
+        else if (eKey && (pedestal == this.pedestal3)) {
             if(inventory.length == 1 && inventory[0] == 'Scroll') {
                 console.log("artifact placed on pedestal");
                 pedestalArtifacts[2] = true;
+                inventory.pop();
+                this.updateInventory();
+            }
+            else if(inventory.length < 1) {
+                console.log("You need to find something to place here");
+            }
+            else {
+                console.log("You don't have the right artifact to place here");
+            }
+        }
+
+        else if (eKey && (pedestal == this.pedestal4)) {
+            if(inventory.length == 1 && inventory[0] == 'Crow') {
+                console.log("artifact placed on pedestal");
+                pedestalArtifacts[3] = true;
                 inventory.pop();
                 this.updateInventory();
             }
@@ -337,7 +362,7 @@ class CentralHub extends Phaser.Scene {
     updateInventory() {
         if(inventory.length > 0) {
             this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
-            this.inventoryArtifact.setDepth(objectDepth);
+            this.inventoryArtifact.setDepth(invArtDepth);
             console.log(this.inventoryArtifact);
         } else {
             this.inventoryArtifact.destroy();

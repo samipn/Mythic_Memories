@@ -4,17 +4,20 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     preload() {
-        this.load.path = "./assets/";	
-        this.load.image('Npc', 'BetaApollo.png');	
+        this.load.path = "./assets/";		
+        this.load.image('NpcR', 'NPC 2.png');
     }
 
-    create() {     
+    create() {
+        this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
+        this.inventoryArtifact = this.add.sprite(450, 675, 'Scroll').setOrigin(0.5,1);
+
         this.currentQuestion = 0;
         this.answerArray = [];
         this.canAnswer = false;
 
         // Created Player
-        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player = this.physics.add.sprite(game.config.width/2, 800, 'Beta Apollo');
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(57,20);
         this.player.body.setOffset(7, 135);
@@ -26,6 +29,9 @@ class RiddlePuzzle extends Phaser.Scene {
         this.playerInteractBox.visible = false;
         this.playerInteractBox.body.immovable = true;
 
+        // Make group for all collidable objects
+        this.objects = this.add.group();
+
         // Created Room walls
         this.walls = this.add.group();
         this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
@@ -35,12 +41,14 @@ class RiddlePuzzle extends Phaser.Scene {
         this.walls.add(this.topWall);
 
         this.botWall = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.botWall.name = "botWall";
         this.physics.add.existing(this.botWall);
         this.botWall.body.setSize(wallSize * 94, 100);
         this.botWall.body.setOffset(0, 100);
         this.botWall.body.immovable = true;
-        this.botWall.setDepth(3);
+        this.botWall.setDepth(envDepth);
         this.walls.add(this.botWall);
+        this.objects.add(this.botWall);
 
         this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.leftWall);
@@ -55,14 +63,13 @@ class RiddlePuzzle extends Phaser.Scene {
         this.walls.add(this.rightWall);
 
         this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
-        this.floor.setDepth(envDepth);
+        this.floor.setDepth(-3);
         
         // Create hub door
-        this.hubDoor = this.physics.add.sprite(game.config.width/2, 950, 'Door').setOrigin(0.5).setScale(3);
+        this.hubDoor = this.physics.add.sprite(game.config.width/2, 940, 'Door').setOrigin(0.5).setScale(4);
         this.hubDoor.body.immovable = true;
         this.hubDoor.body.setSize(30,60);
         this.hubDoor.body.setOffset(35, 17);
-        this.hubDoor.setAngle(180);
         this.hubDoor.setDepth(objectDepth);
 
         // Create Artifact (Level Complete)
@@ -95,7 +102,8 @@ class RiddlePuzzle extends Phaser.Scene {
         this.answerButtons.add(this.answerButtonD);
 
         // Create NPC
-        this.Npc = this.physics.add.sprite(1600, 700, 'Npc').setOrigin(0.5).setScale(1);
+        this.Npc = this.physics.add.sprite(1600, 700, 'NpcR').setOrigin(0.5).setScale(0.7);
+        this.Npc.setFlipX(true);
         this.Npc.body.immovable = true;
 
         // Create riddles
@@ -127,16 +135,25 @@ class RiddlePuzzle extends Phaser.Scene {
         this.riddle3.visible = false;
         this.riddle3.setDepth(objectDepth);
 
+        // Create overlap hitboxes 
+        this.botWallOverlapBody = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.physics.add.existing(this.botWallOverlapBody);
+        this.botWallOverlapBody.setDepth(-2);
+        this.botWallOverlapBody.body.immovable = true;
+        this.botWallOverlapBody.visible = false;
+
         // Inventory GUI
-        //this.updateInventory();
-        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
-        invRect.setDepth(envDepth);
-        this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        this.updateInventory();
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x136207);
+        let invText = this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        invRect.setDepth(invDepth);
+        invText.setDepth(invDepth);
 
         //Player physics
         this.physics.add.collider(this.player, this.walls);
         this.physics.add.collider(this.player, this.answerButtons);
         this.physics.add.collider(this.player, this.Npc);
+        this.physics.add.collider(this.player, this.scroll);
 
         // Player hitbox physics
         this.physics.add.overlap(this.playerInteractBox, this.Npc, this.npcInteract, null, this);
@@ -146,6 +163,25 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     update() {
+        // Hacky overlap detection
+        this.objects.children.each((object) => {
+            
+            // slap on OverlapBody to end of object (convention for overlap vs object collision)
+            let dynamicVariableName = object.name + "OverlapBody";
+            let dynamicVariable = this[dynamicVariableName];
+            // check if its inside object using intersection area to prevent colliding triggers
+            let intersection = Phaser.Geom.Rectangle.Intersection(this.player.body, dynamicVariable.body);
+            let intersectionArea = Phaser.Geom.Rectangle.Area(intersection);
+            // dynamically set depths
+            if (intersectionArea > 0) {
+                object.alpha = 0.7;
+                object.setDepth(objectDepth);
+            } else{
+                object.alpha = 1;
+                object.setDepth(envDepth);
+            }
+        });
+
         // Have interact hitbox follow player
         this.playerInteractBox.x = this.player.x;
         this.playerInteractBox.y = this.player.y;
@@ -186,7 +222,7 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     npcInteract() {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 0) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)) && this.currentQuestion == 0) {
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;
@@ -204,7 +240,9 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     checkAnswer(hitbox, answer) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 1 && this.canAnswer == true) {
+        let eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
+        //console.log(Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)));
+        if (eKey && this.currentQuestion == 1 && this.canAnswer == true) {
             this.answerArray.push(answer.name);
             this.riddle1.visible = false;
             this.canAnswer = false;
@@ -216,7 +254,8 @@ class RiddlePuzzle extends Phaser.Scene {
             console.log(this.answerArray);
             // SECOND
         } 
-        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 2 && this.canAnswer == true) {
+        else if (eKey && this.currentQuestion == 2 && this.canAnswer == true) {
+            console.log("test");
             this.answerArray.push(answer.name);
             this.riddle2.visible = false;
             this.canAnswer = false;
@@ -227,7 +266,7 @@ class RiddlePuzzle extends Phaser.Scene {
             });
             console.log(this.answerArray);
         }
-        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && this.currentQuestion == 3 && this.canAnswer == true) {
+        else if (eKey && this.currentQuestion == 3 && this.canAnswer == true) {
             this.answerArray.push(answer.name);
             this.riddle3.visible = false;
             this.canAnswer = false;
@@ -252,7 +291,7 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     interactDoor(player, door) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
             this.cameras.main.fade(1000, 0, 0, 0);
             this.time.delayedCall(1000, () => {
                 this.scene.start('centralhub');
@@ -263,7 +302,7 @@ class RiddlePuzzle extends Phaser.Scene {
     updateInventory() {
         if(inventory.length > 0) {
             this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
-            this.inventoryArtifact.setDepth(objectDepth);
+            this.inventoryArtifact.setDepth(invArtDepth);
             console.log(this.inventoryArtifact);
         } else {
             this.inventoryArtifact.destroy();
@@ -271,7 +310,7 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     pickUp () {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+        if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
             inventory.push('Scroll');
             this.scroll.body.enable = false;
             this.scroll.visible = false;
