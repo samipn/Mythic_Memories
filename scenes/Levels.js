@@ -5,10 +5,17 @@ class CentralHub extends Phaser.Scene {
     preload() {
       this.load.path = "./assets/";		
       this.load.image('Beta Apollo', 'BetaApollo.png');
+      this.load.image('Top Wall', 'topWall.png');
+      this.load.image('Bottom Wall', 'botWall.png');
+      this.load.image('Right Wall', 'rightWall.png');
+      this.load.image('Left Wall', 'leftWall.png');
+      this.load.image('Pedestal', 'Pedestal.png')
+      this.load.image('Floor', 'Floor.png');
       this.load.image('Dirt', 'Dirt.png');
       this.load.image('Door', 'Door.png');
       this.load.image('Lyre', 'Lyre.png');
       this.load.image('Bow', 'Bow.png');
+      this.load.image('Scroll', 'Scroll.png');
     }
     create() {
         this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
@@ -16,6 +23,9 @@ class CentralHub extends Phaser.Scene {
         if(inventory.length > 0) {
             this.inventoryArtifact.destroy();
         }
+
+        // Make group for all collidable objects
+        this.objects = this.add.group();
 
         // Created Player
         this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo').setOrigin(0.5);
@@ -32,177 +42,191 @@ class CentralHub extends Phaser.Scene {
 
         // Created Room walls
         this.walls = this.add.group();
-        this.topWall = this.add.tileSprite(0, (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.topWall);
         this.topWall.body.immovable = true;
         this.topWall.setDepth(envDepth);
         this.walls.add(this.topWall);
 
-        this.botWall = this.add.tileSprite(0, 1000 - (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.botWall = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.botWall.name = "botWall";
         this.physics.add.existing(this.botWall);
+        this.botWall.body.setSize(wallSize * 94, 100);
+        this.botWall.body.setOffset(0, 100);
         this.botWall.body.immovable = true;
-        this.botWall.setDepth(envDepth);
+        this.botWall.setDepth(objectDepth);
         this.walls.add(this.botWall);
+        this.objects.add(this.botWall);
 
-        this.leftWall = this.add.tileSprite(100, (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.leftWall);
         this.leftWall.body.immovable = true;
         this.leftWall.setDepth(envDepth);
         this.walls.add(this.leftWall);
 
-        this.rightWall = this.add.tileSprite(1800 - (tileSize*SCALE), (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.rightWall = this.add.sprite(1820 - (wallSize*SCALE), 50, 'Right Wall').setScale(1).setOrigin(1,0);
         this.physics.add.existing(this.rightWall);
         this.rightWall.body.immovable = true;
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
 
-        // Make group for all collidable objects
-        this.objects = this.add.group();
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(-3);
 
-        // Created pedastals
-        this.pedastals = this.add.group();
-        this.pedastal1 = this.add.tileSprite(450,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.pedastal1.name = "pedastal1";
-        this.physics.add.existing(this.pedastal1);
-        this.pedastal1.body.immovable = true;
-        this.pedastal1.body.setSize(tileSize,tileSize);
-        this.pedastal1.body.setOffset(0,tileSize);
-        this.pedastal1.setDepth(envDepth);
-        this.pedastals.add(this.pedastal1);
-        this.objects.add(this.pedastal1);
+        // Created pedestals
+        this.pedestals = this.add.group();
 
-        this.pedastal2 = this.add.tileSprite(750,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.pedastal2.name = "pedastal2";
-        this.physics.add.existing(this.pedastal2);
-        this.pedastal2.body.immovable = true;
-        this.pedastal2.body.setSize(tileSize,tileSize);
-        this.pedastal2.body.setOffset(0,tileSize);
-        this.pedastal2.setDepth(envDepth);
-        this.pedastals.add(this.pedastal2);
-        this.objects.add(this.pedastal2);
+        this.pedestal1 = this.add.sprite(450,700,'Pedestal').setOrigin(0.5);
+        this.pedestal1.name = "pedestal1";
+        this.physics.add.existing(this.pedestal1);
+        this.pedestal1.body.immovable = true;
+        this.pedestal1.body.setSize(tileSize,tileSize/2 + 20);
+        this.pedestal1.body.setOffset(0,tileSize/2 + 20);
+        this.pedestal1.setDepth(objectDepth);
+        this.pedestals.add(this.pedestal1);
+        this.objects.add(this.pedestal1);
 
-        this.pedastal3 = this.add.tileSprite(1050,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.pedastal3.name = "pedastal3";
-        this.physics.add.existing(this.pedastal3);
-        this.pedastal3.body.immovable = true;
-        this.pedastal3.body.setSize(tileSize,tileSize);
-        this.pedastal3.body.setOffset(0,tileSize);
-        this.pedastal3.setDepth(envDepth);
-        this.pedastals.add(this.pedastal3);
-        this.objects.add(this.pedastal3);
+        this.pedestal2 = this.add.sprite(750,700,'Pedestal').setOrigin(0.5);
+        this.pedestal2.name = "pedestal2";
+        this.physics.add.existing(this.pedestal2);
+        this.pedestal2.body.immovable = true;
+        this.pedestal2.body.setSize(tileSize,tileSize/2 + 20);
+        this.pedestal2.body.setOffset(0,tileSize/2 + 20);
+        this.pedestal2.setDepth(objectDepth);
+        this.pedestals.add(this.pedestal2);
+        this.objects.add(this.pedestal2);
 
-        this.pedastal4 = this.add.tileSprite(1350,700,tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.pedastal4.name = "pedastal4";
-        this.physics.add.existing(this.pedastal4);
-        this.pedastal4.body.immovable = true;
-        this.pedastal4.body.setSize(tileSize,tileSize);
-        this.pedastal4.body.setOffset(0,tileSize);
-        this.pedastal4.setDepth(envDepth);
-        this.pedastals.add(this.pedastal4);
-        this.objects.add(this.pedastal4);
+        this.pedestal3 = this.add.sprite(1050,700,'Pedestal').setOrigin(0.5);
+        this.pedestal3.name = "pedestal3";
+        this.physics.add.existing(this.pedestal3);
+        this.pedestal3.body.immovable = true;
+        this.pedestal3.body.setSize(tileSize,tileSize/2 + 20);
+        this.pedestal3.body.setOffset(0,tileSize/2 + 20);
+        this.pedestal3.setDepth(objectDepth);
+        this.pedestals.add(this.pedestal3);
+        this.objects.add(this.pedestal3);
+
+        this.pedestal4 = this.add.sprite(1350,700,'Pedestal').setOrigin(0.5);
+        this.pedestal4.name = "pedestal4";
+        this.physics.add.existing(this.pedestal4);
+        this.pedestal4.body.immovable = true;
+        this.pedestal4.body.setSize(tileSize,tileSize/2 + 20);
+        this.pedestal4.body.setOffset(0,tileSize/2 + 20);
+        this.pedestal4.setDepth(objectDepth);
+        this.pedestals.add(this.pedestal4);
+        this.objects.add(this.pedestal4);
 
 
         // Created Puzzle Doors
         this.puzzledoors = this.add.group();
 
-        this.puzzleDoor1 = this.physics.add.sprite(450, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor1 = this.physics.add.sprite(450, 157, 'Door').setOrigin(0.5).setScale(4);
         this.puzzleDoor1.body.immovable = true;
         this.puzzleDoor1.body.setSize(30,60);
         this.puzzleDoor1.body.setOffset(35, 17);
-        this.puzzleDoor1.setDepth(objectDepth);
+        this.puzzleDoor1.setDepth(envDepth);
         this.puzzledoors.add(this.puzzleDoor1);
 
-        this.puzzleDoor2 = this.physics.add.sprite(750, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor2 = this.physics.add.sprite(750, 157, 'Door').setOrigin(0.5).setScale(4);
         this.puzzleDoor2.body.immovable = true;
         this.puzzleDoor2.body.setSize(30,60);
         this.puzzleDoor2.body.setOffset(35, 17);
-        this.puzzleDoor2.setDepth(objectDepth);
+        this.puzzleDoor2.setDepth(envDepth);
         this.puzzledoors.add(this.puzzleDoor2);
 
-        this.puzzleDoor3 = this.physics.add.sprite(1050, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor3 = this.physics.add.sprite(1050, 157, 'Door').setOrigin(0.5).setScale(4);
         this.puzzleDoor3.body.immovable = true;
         this.puzzleDoor3.body.setSize(30,60);
         this.puzzleDoor3.body.setOffset(35, 17);
-        this.puzzleDoor3.setDepth(objectDepth);
+        this.puzzleDoor3.setDepth(envDepth);
         this.puzzledoors.add(this.puzzleDoor3);
 
-        this.puzzleDoor4 = this.physics.add.sprite(1350, 153, 'Door').setOrigin(0.5).setScale(3);
+        this.puzzleDoor4 = this.physics.add.sprite(1350, 157, 'Door').setOrigin(0.5).setScale(4);
         this.puzzleDoor4.body.immovable = true;
         this.puzzleDoor4.body.setSize(30,60);
         this.puzzleDoor4.body.setOffset(35, 17);
-        this.puzzleDoor4.setDepth(objectDepth);
+        this.puzzleDoor4.setDepth(envDepth);
         this.puzzledoors.add(this.puzzleDoor4);
 
         // Created artifacts
-        this.lyre = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
+        this.lyre = this.add.sprite(450, 650, 'Lyre').setOrigin(0.5,1);
         this.lyre.setDepth(objectDepth);
         this.lyre.visible = false;
 
-        this.bow = this.add.sprite(750, 675, 'Bow').setOrigin(0.5,1);
+        this.bow = this.add.sprite(750, 650, 'Bow').setOrigin(0.5,1);
         this.bow.setDepth(objectDepth);
         this.bow.visible = false;
+
+        this.scroll = this.add.sprite(1050, 650, 'Scroll').setOrigin(0.5,1);
+        this.scroll.setDepth(objectDepth);
+        this.scroll.visible = false;
         
         // Created overlap hitboxes
-        this.pedastal1OverlapBody = this.add.tileSprite(this.pedastal1.x, this.pedastal1.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.physics.add.existing(this.pedastal1OverlapBody);
-        this.pedastal1OverlapBody.body.immovable = true;
-        this.pedastal1OverlapBody.visible = false;
+        this.pedestal1OverlapBody = this.add.sprite(this.pedestal1.x, this.pedestal1.y,'Pedestal').setOrigin(0.5);
+        this.physics.add.existing(this.pedestal1OverlapBody);
+        this.pedestal1OverlapBody.body.immovable = true;
+        this.pedestal1OverlapBody.visible = false;
 
-        this.pedastal2OverlapBody = this.add.tileSprite(this.pedastal2.x, this.pedastal2.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.physics.add.existing(this.pedastal2OverlapBody);
-        this.pedastal2OverlapBody.body.immovable = true;
-        this.pedastal2OverlapBody.visible = false;
+        this.pedestal2OverlapBody = this.add.sprite(this.pedestal2.x, this.pedestal2.y,'Pedestal').setOrigin(0.5);
+        this.physics.add.existing(this.pedestal2OverlapBody);
+        this.pedestal2OverlapBody.body.immovable = true;
+        this.pedestal2OverlapBody.visible = false;
         
-        this.pedastal3OverlapBody = this.add.tileSprite(this.pedastal3.x, this.pedastal3.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.physics.add.existing(this.pedastal3OverlapBody);
-        this.pedastal3OverlapBody.body.immovable = true;
-        this.pedastal3OverlapBody.visible = false;
+        this.pedestal3OverlapBody = this.add.sprite(this.pedestal3.x, this.pedestal3.y,'Pedestal').setOrigin(0.5);
+        this.physics.add.existing(this.pedestal3OverlapBody);
+        this.pedestal3OverlapBody.body.immovable = true;
+        this.pedestal3OverlapBody.visible = false;
 
-        this.pedastal4OverlapBody = this.add.tileSprite(this.pedastal4.x, this.pedastal4.y, tileSize, tileSize*2,'Dirt').setScale(SCALE).setOrigin(0.5);
-        this.physics.add.existing(this.pedastal4OverlapBody);
-        this.pedastal4OverlapBody.body.immovable = true;
-        this.pedastal4OverlapBody.visible = false;
+        this.pedestal4OverlapBody = this.add.sprite(this.pedestal4.x, this.pedestal4.y,'Pedestal').setOrigin(0.5);
+        this.physics.add.existing(this.pedestal4OverlapBody);
+        this.pedestal4OverlapBody.body.immovable = true;
+        this.pedestal4OverlapBody.visible = false;
+
+        this.botWallOverlapBody = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.physics.add.existing(this.botWallOverlapBody);
+        this.botWallOverlapBody.setDepth(-2);
+        this.botWallOverlapBody.body.immovable = true;
+        this.botWallOverlapBody.visible = false;
 
         // Inventory GUI
         this.updateInventory();
-        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
-        invRect.setDepth(envDepth);
-        this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x136207);
+        invRect.setDepth(3);
+        let invText = this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        invText.setDepth(4);
 
         // Physics stuff
         this.physics.add.collider(this.player, this.walls);
-        this.physics.add.collider(this.player, this.pedastals);
+        this.physics.add.collider(this.player, this.pedestals);
         this.physics.add.overlap(this.player, this.puzzledoors, this.interactDoor, null, this);
-        this.physics.add.overlap(this.playerInteractBox, this.pedastals, this.interactPedastal, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.pedestals, this.interactPedestal, null, this);
     }
     update() {
         // Hacky overlap detection
         this.objects.children.each((object) => {
+            
             // slap on OverlapBody to end of object (convention for overlap vs object collision)
             let dynamicVariableName = object.name + "OverlapBody";
             let dynamicVariable = this[dynamicVariableName];
-
             // check if its inside object using intersection area to prevent colliding triggers
             let intersection = Phaser.Geom.Rectangle.Intersection(this.player.body, dynamicVariable.body);
             let intersectionArea = Phaser.Geom.Rectangle.Area(intersection);
             // dynamically set depths
             if (intersectionArea > 0) {
-                object.setDepth(1);
-                this.player.setDepth(0);
                 object.alpha = 0.7;
             } else{
-                object.setDepth(envDepth);
-                this.player.setDepth(playerDepth);
                 object.alpha = 1;
-                this.player.alpha = 1;
             }
         });
 
-        if(pedastalArtifacts[0] == true) {
+        if(pedestalArtifacts[0] == true) {
             this.lyre.visible = true;
         }
-        if(pedastalArtifacts[1] == true) {
+        if(pedestalArtifacts[1] == true) {
             this.bow.visible = true;
+        }
+        if(pedestalArtifacts[2] == true) {
+            this.scroll.visible = true;
         }
 
         // Have interact hitbox follow player
@@ -264,11 +288,11 @@ class CentralHub extends Phaser.Scene {
         }
     }
 
-    interactPedastal(player, pedastal) {
-        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedastal == this.pedastal1)) {
+    interactPedestal(player, pedestal) {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedestal == this.pedestal1)) {
             if(inventory.length == 1 && inventory[0] == 'Lyre') {
-                console.log("artifact placed on pedastal");
-                pedastalArtifacts[0] = true;
+                console.log("artifact placed on pedestal");
+                pedestalArtifacts[0] = true;
                 inventory.pop();
                 this.updateInventory();
             }
@@ -279,10 +303,24 @@ class CentralHub extends Phaser.Scene {
                 console.log("You don't have the right artifact to place here");
             }
         }
-        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedastal == this.pedastal2)) {
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedestal == this.pedestal2)) {
             if(inventory.length == 1 && inventory[0] == 'Bow') {
-                console.log("artifact placed on pedastal");
-                pedastalArtifacts[1] = true;
+                console.log("artifact placed on pedestal");
+                pedestalArtifacts[1] = true;
+                inventory.pop();
+                this.updateInventory();
+            }
+            else if(inventory.length < 1) {
+                console.log("You need to find something to place here");
+            }
+            else {
+                console.log("You don't have the right artifact to place here");
+            }
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown && (pedestal == this.pedestal3)) {
+            if(inventory.length == 1 && inventory[0] == 'Scroll') {
+                console.log("artifact placed on pedestal");
+                pedestalArtifacts[2] = true;
                 inventory.pop();
                 this.updateInventory();
             }
@@ -352,29 +390,36 @@ class MusicPuzzle extends Phaser.Scene {
 
         // Created Room walls
         this.walls = this.add.group();
-        this.topWall = this.add.tileSprite(0, (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.topWall);
         this.topWall.body.immovable = true;
         this.topWall.setDepth(envDepth);
         this.walls.add(this.topWall);
 
-        this.botWall = this.add.tileSprite(0, 1000 - (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.botWall = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.botWall.name = "botWall";
         this.physics.add.existing(this.botWall);
+        this.botWall.body.setSize(wallSize * 94, 100);
+        this.botWall.body.setOffset(0, 100);
         this.botWall.body.immovable = true;
         this.botWall.setDepth(envDepth);
         this.walls.add(this.botWall);
+        // this.objects.add(this.botWall);
 
-        this.leftWall = this.add.tileSprite(100, (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.leftWall);
         this.leftWall.body.immovable = true;
         this.leftWall.setDepth(envDepth);
         this.walls.add(this.leftWall);
 
-        this.rightWall = this.add.tileSprite(1800 - (tileSize*SCALE), (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.rightWall = this.add.sprite(1820 - (wallSize*SCALE), 50, 'Right Wall').setScale(1).setOrigin(1,0);
         this.physics.add.existing(this.rightWall);
         this.rightWall.body.immovable = true;
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
+
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(-3);
 
         // Created music puzzle pieces
         this.pieces = this.add.group();
@@ -766,29 +811,34 @@ class BowPuzzle extends Phaser.Scene {
 
         // Created Room walls
         this.walls = this.add.group();
-        this.topWall = this.add.tileSprite(0, (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.topWall);
         this.topWall.body.immovable = true;
         this.topWall.setDepth(envDepth);
         this.walls.add(this.topWall);
 
-        this.botWall = this.add.tileSprite(0, 1000 - (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.botWall = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.botWall);
+        this.botWall.body.setSize(wallSize * 94, 100);
+        this.botWall.body.setOffset(0, 100);
         this.botWall.body.immovable = true;
-        this.botWall.setDepth(envDepth);
+        this.botWall.setDepth(3);
         this.walls.add(this.botWall);
 
-        this.leftWall = this.add.tileSprite(100, (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.leftWall);
         this.leftWall.body.immovable = true;
         this.leftWall.setDepth(envDepth);
         this.walls.add(this.leftWall);
 
-        this.rightWall = this.add.tileSprite(1800 - (tileSize*SCALE), (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.rightWall = this.add.sprite(1820 - (wallSize*SCALE), 50, 'Right Wall').setScale(1).setOrigin(1,0);
         this.physics.add.existing(this.rightWall);
         this.rightWall.body.immovable = true;
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
+
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(envDepth);
 
         // Create fence
         this.fence = this.add.tileSprite(100 + (tileSize*SCALE), 750 - (tileSize*SCALE), tileSize * 14.25, tileSize, 'Fence').setScale(SCALE).setOrigin(0);
@@ -834,9 +884,10 @@ class BowPuzzle extends Phaser.Scene {
 
         // Inventory GUI
         this.updateInventory();
-        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x000000);
-        invRect.setDepth(envDepth);
-        this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        let invRect = this.add.rectangle(1750, 950, 400, 300, 0x136207);
+        invRect.setDepth(3);
+        let invText = this.add.text(1570, 820, "Inventory", {fontSize: 40});
+        invText.setDepth(4);
 
         // Player Physics
         this.physics.add.collider(this.player, this.walls);
@@ -991,29 +1042,34 @@ class RiddlePuzzle extends Phaser.Scene {
 
         // Created Room walls
         this.walls = this.add.group();
-        this.topWall = this.add.tileSprite(0, (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.topWall);
         this.topWall.body.immovable = true;
         this.topWall.setDepth(envDepth);
         this.walls.add(this.topWall);
 
-        this.botWall = this.add.tileSprite(0, 1000 - (tileSize*SCALE), tileSize * 20, tileSize, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.botWall = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.botWall);
+        this.botWall.body.setSize(wallSize * 94, 100);
+        this.botWall.body.setOffset(0, 100);
         this.botWall.body.immovable = true;
-        this.botWall.setDepth(envDepth);
+        this.botWall.setDepth(3);
         this.walls.add(this.botWall);
 
-        this.leftWall = this.add.tileSprite(100, (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.leftWall);
         this.leftWall.body.immovable = true;
         this.leftWall.setDepth(envDepth);
         this.walls.add(this.leftWall);
 
-        this.rightWall = this.add.tileSprite(1800 - (tileSize*SCALE), (tileSize*SCALE), tileSize, tileSize * 20, 'Dirt').setScale(SCALE).setOrigin(0);
+        this.rightWall = this.add.sprite(1820 - (wallSize*SCALE), 50, 'Right Wall').setScale(1).setOrigin(1,0);
         this.physics.add.existing(this.rightWall);
         this.rightWall.body.immovable = true;
         this.rightWall.setDepth(envDepth);
         this.walls.add(this.rightWall);
+
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(envDepth);
         
         // Create hub door
         this.hubDoor = this.physics.add.sprite(game.config.width/2, 950, 'Door').setOrigin(0.5).setScale(3);
@@ -1022,6 +1078,12 @@ class RiddlePuzzle extends Phaser.Scene {
         this.hubDoor.body.setOffset(35, 17);
         this.hubDoor.setAngle(180);
         this.hubDoor.setDepth(objectDepth);
+
+        // Create Artifact (Level Complete)
+        this.scroll = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Scroll').setOrigin(0.5);
+        this.scroll.body.immovable = true;
+        this.scroll.body.enable = false;
+        this.scroll.visible = false;
         
         // Created Answer Buttons
         this.answerButtons = this.add.group();
@@ -1056,6 +1118,7 @@ class RiddlePuzzle extends Phaser.Scene {
             fill: '#000000',
         });
         this.npcText.visible = false;
+        this.npcText.setDepth(objectDepth);
         
         this.riddle1 = this.add.text(225, 220, "What musical instrument doesn't tell the truth? \nA. Lute \nB. Lyre \nC. Harp \nD. Piano", {
                 fontSize: 40,
@@ -1093,6 +1156,7 @@ class RiddlePuzzle extends Phaser.Scene {
         this.physics.add.overlap(this.playerInteractBox, this.Npc, this.npcInteract, null, this);
         this.physics.add.overlap(this.playerInteractBox, this.answerButtons, this.checkAnswer, null, this);
         this.physics.add.overlap(this.player, this.hubDoor, this.interactDoor, null, this);
+        this.physics.add.overlap(this.playerInteractBox, this.scroll, this.pickUp, null, this);
     }
 
     update() {
@@ -1183,7 +1247,9 @@ class RiddlePuzzle extends Phaser.Scene {
             this.canAnswer = false;
             if (this.answerArray[0] == 'B' && this.answerArray[1] == 'A' && this.answerArray[2] == 'C') {
                 console.log("npc dialogue, create artifact, spawn artifact, look musicpuzzle");
-                console.log("flashback, exit room")
+                console.log("flashback, exit room");
+                this.scroll.body.enable = true;
+                this.scroll.visible = true;
             }
             else {
                 // retry bozo
@@ -1216,5 +1282,178 @@ class RiddlePuzzle extends Phaser.Scene {
         } else {
             this.inventoryArtifact.destroy();
         }
+    }
+
+    pickUp () {
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E).isDown) {
+            inventory.push('Scroll');
+            this.scroll.body.enable = false;
+            this.scroll.visible = false;
+            this.updateInventory();
+        }
+    }
+}
+
+//[0, 0, 0],
+//[0, 1, 0],
+//[0, 0, 0]
+class MazePuzzle extends Phaser.Scene {
+    constructor() {
+        super('mazepuzzle');
+    }
+
+    preload() {
+        this.load.path = "./assets/";		
+        this.load.image('Fire', 'Fire.png');
+        this.load.image('Milf', 'Milf.png');
+    }
+    
+    create() {
+        // Created Player
+        this.player = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.player.setCollideWorldBounds(true);
+        this.player.body.setSize(57,20);
+        this.player.body.setOffset(7, 135);
+        this.player.setDepth(playerDepth);
+
+        this.playerInteractBox = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
+        this.playerInteractBox.body.setSize(57,20);
+        this.playerInteractBox.body.setOffset(7, 135);
+        this.playerInteractBox.visible = false;
+        this.playerInteractBox.body.immovable = true;
+
+        // Created Room walls
+        this.walls = this.add.group();
+        this.topWall = this.add.tileSprite(220, 50, wallSize * 8 * 12, wallSize * 12, 'Top Wall').setScale(1).setOrigin(0);
+        this.physics.add.existing(this.topWall);
+        this.topWall.body.immovable = true;
+        this.topWall.setDepth(envDepth);
+        this.walls.add(this.topWall);
+
+        this.botWall = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
+        this.physics.add.existing(this.botWall);
+        this.botWall.body.setSize(wallSize * 94, 100);
+        this.botWall.body.setOffset(0, 100);
+        this.botWall.body.immovable = true;
+        this.botWall.setDepth(3);
+        this.walls.add(this.botWall);
+
+        this.leftWall = this.add.sprite(100, 50, 'Left Wall').setScale(1).setOrigin(0);
+        this.physics.add.existing(this.leftWall);
+        this.leftWall.body.immovable = true;
+        this.leftWall.setDepth(envDepth);
+        this.walls.add(this.leftWall);
+
+        this.rightWall = this.add.sprite(1820 - (wallSize*SCALE), 50, 'Right Wall').setScale(1).setOrigin(1,0);
+        this.physics.add.existing(this.rightWall);
+        this.rightWall.body.immovable = true;
+        this.rightWall.setDepth(envDepth);
+        this.walls.add(this.rightWall);
+
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(envDepth);
+
+        // Created Floor
+        this.floor = this.add.tileSprite(220, 50 + wallSize * 12, 1455, 700, 'Floor').setScale(1.02).setOrigin(0);
+        this.floor.setDepth(envDepth);
+
+        // Create NPC
+        this.Npc = this.physics.add.sprite(600, 500, 'Milf').setOrigin(0.5).setScale(0.45);
+        this.Npc.setDepth(envDepth);
+        this.Npc.body.immovable = true;
+
+        // Created Fire
+        // 120 wide 180 tall
+        this.fires = this.add.group();
+        this.fire1 = this.add.tileSprite(300, 470, 120, 905, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire1);
+        this.fire1.body.immovable = true;
+        this.fires.add(this.fire1);
+
+        this.fire2 = this.add.tileSprite(440, 490, 120, 805, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire2);
+        this.fire2.body.immovable = true;
+        this.fires.add(this.fire2);
+
+        this.fire3 = this.add.tileSprite(650, 334, 725, 180, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire3);
+        this.fire3.body.immovable = true;
+        this.fires.add(this.fire3);
+
+        this.fire4 = this.add.tileSprite(800, 550, 120, 875, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire4);
+        this.fire4.body.immovable = true;
+        this.fires.add(this.fire4);
+
+        this.fire5 = this.add.tileSprite(1265, 725, 1750, 180, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire5);
+        this.fire5.body.immovable = true;
+        this.fires.add(this.fire5);
+
+        this.fire6 = this.add.tileSprite(940, 445, 120, 785, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire6);
+        this.fire6.body.immovable = true;
+        this.fires.add(this.fire6);
+
+        this.fire7 = this.add.tileSprite(1550, 465, 120, 700, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire7);
+        this.fire7.body.immovable = true;
+        this.fires.add(this.fire7);
+
+        this.fire8 = this.add.tileSprite(1245, 596, 1100, 180, 'Fire').setScale(.5);
+        this.physics.add.existing(this.fire8);
+        this.fire8.body.immovable = true;
+        this.fires.add(this.fire8);
+
+        //Player physics
+        this.physics.add.collider(this.player, this.walls);
+        this.physics.add.collider(this.player, this.fires, this.resetPlayer, null, this);
+        this.physics.add.collider(this.player, this.Npc);
+    }
+
+    update() {
+        // Have interact hitbox follow player
+        this.playerInteractBox.x = this.player.x;
+        this.playerInteractBox.y = this.player.y;
+
+        // Y Movement
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W).isDown) {
+            // W key is currently being pressed
+            this.player.setVelocityY(-MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,50);
+            this.playerInteractBox.body.setOffset(0,50);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
+            // S key is currently being pressed
+            this.player.setVelocityY(MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,50);
+            this.playerInteractBox.body.setOffset(0,120);
+        }
+        else {
+            this.player.setVelocityY(0);
+        }
+        
+        // X Movement
+        if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A).isDown) {
+            // A key is currently being pressed
+            this.player.setVelocityX(-MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,120);
+            this.playerInteractBox.body.setOffset(-70,0);
+        }
+        else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
+            // D key is currently being pressed
+            this.player.setVelocityX(MAX_VELOCITY);
+            this.playerInteractBox.body.setSize(70,120);
+            this.playerInteractBox.body.setOffset(70,0);
+        }
+        else {
+            this.player.setVelocityX(0);
+        }    
+    }
+
+    // Reset player when they touch the fire
+    resetPlayer() {
+        this.player.x = 400;
+        this.player.y = 800;
     }
 }

@@ -1,12 +1,13 @@
 // Global variables
 const SCALE = 0.5;
 const tileSize = 209;
+const wallSize = 16;
 const MAX_VELOCITY = 300;
-const objectDepth = 0;
+const objectDepth = 2;
 const playerDepth = 1;
-const envDepth = -1;
+const envDepth = 0;
 let inventory = [];
-let pedastalArtifacts = [false, false, false, false];
+let pedestalArtifacts = [false, false, false, false];
 let level1Complete = false;
 let level2Complete = false;
 let level3Complete = false;
@@ -29,7 +30,7 @@ const game = new Phaser.Game({
             }
         }
     },
-    backgroundColor: 0x87CEEB,
-    scene: [CentralHub, MusicPuzzle, BowPuzzle, RiddlePuzzle],
+    backgroundColor: 0x000000,
+    scene: [CentralHub, MusicPuzzle, BowPuzzle, RiddlePuzzle, MazePuzzle],
     title: "Mythic Memories"
 });
