@@ -162,6 +162,30 @@ class BowPuzzle extends Phaser.Scene {
         this.Npc.setDepth(envDepth);
         this.Npc.body.immovable = true;
 
+        // Create npcText
+        this.npcText = this.add.text(225, 220, "Hey kid, let's test your aim. Use this bow to destroy those \ntargets.", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.npcText.setDepth(objectDepth);
+        this.npcText.visible = false;
+
+        // Create extra arrows text
+        this.arrowsText = this.add.text(225, 220, "Here's some more arrows. Come on Kid.", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.arrowsText.setDepth(objectDepth);
+        this.arrowsText.visible = false;
+
+        // Victory Text
+        this.victoryText = this.add.text(225, 220, "Nice aim, kid. You can keep the bow. I have no use for it \nanymore.", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.victoryText.setDepth(objectDepth);
+        this.victoryText.visible = false;
+
         // Create overlap hitboxes 
         this.botWallOverlapBody = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
         this.physics.add.existing(this.botWallOverlapBody);
@@ -277,18 +301,49 @@ class BowPuzzle extends Phaser.Scene {
     npcInteract() {
         let eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         if (eKey && this.hasBow == false) {
+            this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
+            this.physics.add.existing(this.chatBubble);
+            this.chatBubble.body.immovable = true;
+            this.chatBubble.setDepth(envDepth);
+            this.npcText.visible = true;
+            this.physics.add.collider(this.player, this.chatBubble);
             this.hasBow = true;
+            this.time.delayedCall(5000, () => {
+                this.npcText.destroy();
+                this.chatBubble.destroy();
+            });
         }
         else if (eKey && this.targetsHit == 4) {
+            this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
+            this.physics.add.existing(this.chatBubble);
+            this.chatBubble.body.immovable = true;
+            this.chatBubble.setDepth(envDepth);
+            this.victoryText.visible = true;
+            this.physics.add.collider(this.player, this.chatBubble);
+            this.hasBow = true;
+            this.time.delayedCall(4000, () => {
+                this.victoryText.destroy();
+                this.chatBubble.destroy();
+            });
             this.targetsHit += 1;
             inventory.push('Bow');
             this.updateInventory();
         }
         else if (eKey && this.ArrowGroup.getFrameQuantity() == 0){
+            this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
+            this.physics.add.existing(this.chatBubble);
+            this.chatBubble.body.immovable = true;
+            this.chatBubble.setDepth(envDepth);
+            this.arrowsText.visible = true;
+            this.physics.add.collider(this.player, this.chatBubble);
+            this.hasBow = true;
+            this.time.delayedCall(3000, () => {
+                this.arrowsText.destroy();
+                this.chatBubble.destroy();
+            });
             this.ArrowGroup = new ArrowGroup(this);
             this.physics.add.collider(this.ArrowGroup, this.walls, this.destroyArrow, null, this);
             this.physics.add.collider(this.ArrowGroup, this.Targets, this.destroyTarget, null, this);
-            console.log("ur bad here are some more arrows");
         }
     }
 

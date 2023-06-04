@@ -137,6 +137,22 @@ class MusicPuzzle extends Phaser.Scene {
         this.pieceSlot4.setDepth(-1);
         this.pieceSlots.add(this.pieceSlot4);
 
+        // Create Text
+        this.playerText = this.add.text(225, 245, "Hmm, a music puzzle, I may have to put these notes in order.", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.playerText.setDepth(objectDepth);
+        this.playerText.visible = false;
+
+        // Create Hint
+        this.hintText = this.add.text(225, 450, "Hint: \nPress E on the \nmusic notes", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.hintText.setDepth(objectDepth);
+        this.hintText.visible = false;
+
         // Create hub door
         this.hubDoor = this.physics.add.sprite(game.config.width/2, 940, 'Door').setOrigin(0.5).setScale(4);
         this.hubDoor.body.immovable = true;
@@ -283,8 +299,17 @@ class MusicPuzzle extends Phaser.Scene {
             piece.setVelocityX(0);
             piece.setVelocityY(0);
         });
+
+        this.textAppear();
     }
 
+    textAppear() {
+        this.playerText.visible = true;
+        this.time.delayedCall(4000, () => {
+            this.playerText.destroy();
+            this.hintText.visible = true;
+        });
+    }
     pushPiece(player, piece) {
         if (player.body.touching.left) {
             piece.setVelocityX(player.body.velocity.x);

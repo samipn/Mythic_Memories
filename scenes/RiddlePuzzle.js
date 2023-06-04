@@ -107,7 +107,7 @@ class RiddlePuzzle extends Phaser.Scene {
         this.Npc.body.immovable = true;
 
         // Create riddles
-        this.npcText = this.add.text(225, 220, "In order to complete this puzzle you must answer my riddles", {
+        this.npcText = this.add.text(225, 220, "In order to complete this puzzle you must answer my riddles.", {
             fontSize: 40,
             fill: '#000000',
         });
@@ -134,6 +134,13 @@ class RiddlePuzzle extends Phaser.Scene {
         });
         this.riddle3.visible = false;
         this.riddle3.setDepth(objectDepth);
+
+        this.victoryText = this.add.text(225, 220, "I can't believe you've done it. Take this scroll as a reward.", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.victoryText.visible = false;
+        this.victoryText.setDepth(objectDepth);
 
         // Create overlap hitboxes 
         this.botWallOverlapBody = this.add.tileSprite(220, 819, wallSize * 94, wallSize * 12 + 9, 'Bottom Wall').setScale(1).setOrigin(0);
@@ -271,6 +278,12 @@ class RiddlePuzzle extends Phaser.Scene {
             this.riddle3.visible = false;
             this.canAnswer = false;
             if (this.answerArray[0] == 'B' && this.answerArray[1] == 'A' && this.answerArray[2] == 'C') {
+                this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
+                this.physics.add.existing(this.chatBubble);
+                this.chatBubble.body.immovable = true;
+                this.chatBubble.setDepth(envDepth);
+                this.victoryText.visible = true;
+                this.physics.add.collider(this.player, this.chatBubble);
                 console.log("npc dialogue, create artifact, spawn artifact, look musicpuzzle");
                 console.log("flashback, exit room");
                 this.scroll.body.enable = true;
