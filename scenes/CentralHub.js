@@ -16,6 +16,7 @@ class CentralHub extends Phaser.Scene {
       this.load.image('Bow', 'Bow.png');
       this.load.image('Scroll', 'Scroll.png');
       this.load.image('Crow', 'Crow.png');
+      this.load.image('finalApollo', 'Apollo.png');
     }
     create() {
         this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
@@ -30,7 +31,7 @@ class CentralHub extends Phaser.Scene {
         this.player.setCollideWorldBounds(true);
         this.player.body.setSize(57,20);
         this.player.body.setOffset(7, 135);
-        this.player.setDepth(playerDepth);
+        this.player.setDepth(dialogueDepth);
 
         this.playerInteractBox = this.physics.add.sprite(game.config.width/2, game.config.height/2, 'Beta Apollo');
         this.playerInteractBox.body.setSize(57,20);
@@ -165,6 +166,14 @@ class CentralHub extends Phaser.Scene {
         this.crow = this.add.sprite(1350, 650, 'Crow').setOrigin(0.5,1);
         this.crow.setDepth(objectDepth);
         this.crow.visible = false;
+
+        // Victory Text
+        this.victoryText = this.add.text(225, 220, "AYO U WON", {
+            fontSize: 40,
+            fill: '#000000',
+        });
+        this.victoryText.setDepth(dialogueDepth);
+        this.victoryText.visible = false;
         
         // Created overlap hitboxes
         this.pedestal1OverlapBody = this.add.sprite(this.pedestal1.x, this.pedestal1.y,'Pedestal').setOrigin(0.5);
@@ -278,6 +287,12 @@ class CentralHub extends Phaser.Scene {
         }
     }
 
+    // Move player
+    movePlayer() {
+        this.player.x = 900;
+        this.player.y = 400;
+    }
+
     interactDoor(player, door) {
         if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
             this.cameras.main.fade(1000, 0, 0, 0);
@@ -356,6 +371,18 @@ class CentralHub extends Phaser.Scene {
             else {
                 console.log("You don't have the right artifact to place here");
             }
+        }
+
+        // Victory Condition
+        else if (pedestalArtifacts[0] == true && pedestalArtifacts[1] == true && pedestalArtifacts[2] == true && pedestalArtifacts[3] == true) {
+            this.movePlayer();
+            this.player.body.enable = false;
+            this.victoryText.visible = true;
+            this.time.delayedCall(3000, () => {
+                this.victoryText.destroy();
+                this.player.setTexture('finalApollo');
+            });
+            
         }
     }
 

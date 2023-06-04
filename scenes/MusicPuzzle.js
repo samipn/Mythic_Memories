@@ -15,10 +15,27 @@ class MusicPuzzle extends Phaser.Scene {
         this.load.image('mn3', 'MN3.png');
         this.load.image('mn4', 'MN4.png');
         this.load.image('mb', 'Music Box.png')
+        this.load.image('BirthVision', 'BirthVision.png')
     }
     create() {
+            //this.visionPlayer = this.add.image();
         this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
+
+        // Create Dialogue System
+        this.vision = false;
+        this.leftButtonClicked = false;
+        this.dialogueActive = false;
+        this.dialogueRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
+        //this.dialogueRectangle.visible = false;
+        this.dialogueText = this.add.text(220, 100, '', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        this.dialogueData = [
+            "Hmm, a music puzzle, I may have to put these notes in order.\n\n\nClick to Proceed",
+            "Push the notes to the boxes. If they are in the correct left to right play order you complete the puzzle.\nPress E on the music notes to hear it individually.\n\nClick to Dismiss"
+            // Add more dialogue messages as needed
+        ];
+        this.dialogueIndex = 0;
+        
 
         // Create audio
         this.audio0 = this.sound.add('audio1');
@@ -146,7 +163,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.playerText.visible = false;
 
         // Create Hint
-        this.hintText = this.add.text(225, 450, "Hint: \nPress E on the \nmusic notes", {
+        this.hintText = this.add.text(225, 450, "Hint:  Push the notes to the boxes, if they are in the correct left to right play order you complete the puzzle\nPress E on the \nmusic notes", {
             fontSize: 40,
             fill: '#000000',
         });
@@ -235,9 +252,18 @@ class MusicPuzzle extends Phaser.Scene {
         this.physics.add.overlap(this.playerInteractBox, this.playButton, this.playMusic, null, this);
         this.physics.add.overlap(this.playerInteractBox, this.resetButton, this.resetPieces, null, this);
         this.physics.add.overlap(this.playerInteractBox, this.lyre, this.pickUp, null, this);
+        this.dialogueActive = true;
+        this.startDialogue();
     }
 
     update() {
+        if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
+            this.leftButtonClicked = true;
+            this.handleDialogueInteraction();
+        }
+        if (this.input.activePointer.leftButtonReleased()) {
+            this.leftButtonClicked = false;
+        }
         // Hacky overlap detection
         this.objects.children.each((object) => {
             
@@ -299,17 +325,60 @@ class MusicPuzzle extends Phaser.Scene {
             piece.setVelocityX(0);
             piece.setVelocityY(0);
         });
-
-        this.textAppear();
     }
 
-    textAppear() {
-        this.playerText.visible = true;
-        this.time.delayedCall(4000, () => {
-            this.playerText.destroy();
-            this.hintText.visible = true;
-        });
+    handleDialogueInteraction() {
+        if (this.dialogueActive) {
+            // Check if there are more dialogue messages to display
+            if (this.dialogueIndex < this.dialogueData.length - 1) {
+                this.dialogueIndex++;
+                this.displayNextMessage();
+            } else {
+                // All dialogue messages have been displayed
+                this.finishDialogue();
+            }
+        }
     }
+
+    displayNextMessage() {
+        this.dialogueText.setText(this.dialogueData[this.dialogueIndex]);
+        if(this.vision && this.dialogueIndex == 1) {
+            // spawn head, blank background, pic, text
+            this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+            this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+            this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+            this.visionImage = this.add.image(game.config.width/2, 400, 'BirthVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+            this.dialogueText.setDepth(visionDepth+1).setColor('#000000');
+            console.log("it works");
+        }
+    }
+
+    startDialogue() {
+        this.dialogueActive = true;
+        this.dialogueRectangle.visible = true;
+        this.dialogueIndex = 0;
+        this.displayNextMessage();
+        // Disable character movement or perform other actions as needed
+        this.player.body.enable = false;
+    }
+
+    finishDialogue() {
+        this.dialogueActive = false;
+        this.player.body.enable = true;
+        this.dialogueRectangle.visible = false;
+        this.dialogueText.setText('');
+        this.dialogueData = ["What's this vision that's coming to me?!\n\nClick to Proceed", "It looks like some ceremonial and beautiful birth with the same heavenly melody I just heard...\nWeird... Well I better get back and put this on the pedestal"]
+        if(this.vision) {
+            // destroy vision created things
+            this.bg.destroy();
+            this.visionPlayer.destroy();
+            this.visionRectangle.destroy();
+            this.visionImage.destroy();
+            this.dialogueText.setText('');
+        }
+        // Enable character movement or perform other actions as needed
+    }
+
     pushPiece(player, piece) {
         if (player.body.touching.left) {
             piece.setVelocityX(player.body.velocity.x);
@@ -407,6 +476,8 @@ class MusicPuzzle extends Phaser.Scene {
 
     pickUp () {
         if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
+            this.vision = true;
+            this.startDialogue();
             inventory.push('Lyre');
             this.lyre.body.enable = false;
             this.lyre.visible = false;

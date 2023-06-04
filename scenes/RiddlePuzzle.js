@@ -6,9 +6,16 @@ class RiddlePuzzle extends Phaser.Scene {
     preload() {
         this.load.path = "./assets/";		
         this.load.image('NpcR', 'NPC 2.png');
+        this.load.image('A', 'A.png');
+        this.load.image('S', 'S.png');
+        this.load.image('D', 'D.png');
+        this.load.image('F', 'F.png');
     }
 
     create() {
+        this.internalRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
+        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the right', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+
         this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         this.inventoryArtifact = this.add.sprite(450, 675, 'Scroll').setOrigin(0.5,1);
 
@@ -81,22 +88,22 @@ class RiddlePuzzle extends Phaser.Scene {
         // Created Answer Buttons
         this.answerButtons = this.add.group();
 
-        this.answerButtonA = this.physics.add.sprite(450, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonA = this.physics.add.sprite(450, 700, 'A').setOrigin(0.5).setScale(3);
         this.answerButtonA.name = "A";
         this.answerButtonA.body.immovable = true; 
         this.answerButtons.add(this.answerButtonA);
 
-        this.answerButtonB = this.physics.add.sprite(750, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonB = this.physics.add.sprite(750, 700, 'S').setOrigin(0.5).setScale(3);
         this.answerButtonB.name = "B";
         this.answerButtonB.body.immovable = true; 
         this.answerButtons.add(this.answerButtonB);
 
-        this.answerButtonC = this.physics.add.sprite(1050, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonC = this.physics.add.sprite(1050, 700, 'D').setOrigin(0.5).setScale(3);
         this.answerButtonC.name = "C";
         this.answerButtonC.body.immovable = true; 
         this.answerButtons.add(this.answerButtonC);
 
-        this.answerButtonD = this.physics.add.sprite(1350, 700, 'Dirt').setOrigin(0.5).setScale(SCALE);
+        this.answerButtonD = this.physics.add.sprite(1350, 700, 'F').setOrigin(0.5).setScale(3);
         this.answerButtonD.name = "D";
         this.answerButtonD.body.immovable = true; 
         this.answerButtons.add(this.answerButtonD);
@@ -107,28 +114,28 @@ class RiddlePuzzle extends Phaser.Scene {
         this.Npc.body.immovable = true;
 
         // Create riddles
-        this.npcText = this.add.text(225, 220, "In order to complete this puzzle you must answer my riddles.", {
+        this.npcText = this.add.text(225, 220, "In order to complete this puzzle you must answer my riddles\nBy Interacting with the buttons that will be labeled answers\nto my riddles.", {
             fontSize: 40,
             fill: '#000000',
         });
         this.npcText.visible = false;
         this.npcText.setDepth(objectDepth);
         
-        this.riddle1 = this.add.text(225, 220, "What musical instrument doesn't tell the truth? \nA. Lute \nB. Lyre \nC. Harp \nD. Piano", {
+        this.riddle1 = this.add.text(225, 220, "What musical instrument doesn't tell the truth? \nA. Lute \nS. Lyre \nD. Harp \nF. Piano", {
                 fontSize: 40,
                 fill: '#000000',
         });
         this.riddle1.visible = false;
         this.riddle1.setDepth(objectDepth);
 
-        this.riddle2 = this.add.text(225, 220, "Though made of wood, I hold strength untold. \nWith tension and release, my purpose unfolds. \nA. Bow \nB. Spoon \nC. Chair \nD. Door", {
+        this.riddle2 = this.add.text(225, 220, "Though made of wood, I hold strength untold. \nWith tension and release, my purpose unfolds. \nA. Bow \nS. Spoon \nD. Chair \nF. Door", {
             fontSize: 40,
             fill: '#000000',
         });
         this.riddle2.visible = false;
         this.riddle2.setDepth(objectDepth);
 
-        this.riddle3 = this.add.text(225, 220, "What can bring back the dead; make you cry, make you laugh, \nmake you young; is born in an instant, yet lasts a lifetime. \nA. Time \nB. Potion \nC. Memory \nD. Grim Reaper", {
+        this.riddle3 = this.add.text(225, 220, "What can bring back the dead; make you cry, make you laugh, \nmake you young; is born in an instant, yet lasts a lifetime. \nA. Time \nS. Potion \nD. Memory \nF. Grim Reaper", {
             fontSize: 40,
             fill: '#000000',
         });
@@ -230,6 +237,8 @@ class RiddlePuzzle extends Phaser.Scene {
 
     npcInteract() {
         if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E)) && this.currentQuestion == 0) {
+            this.internalRectangle.visible = false;
+            this.internalText.visible = false;
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;

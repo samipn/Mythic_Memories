@@ -59,10 +59,28 @@ class BowPuzzle extends Phaser.Scene {
         this.load.image('Arrow', 'Arrow.png');
         this.load.image('Dummy', 'Target.png');
         this.load.image('NpcB', 'NPC 1.png');
-        this.load.image('Fence', 'Fence.png')
+        this.load.image('Fence', 'Fence.png');
+        this.load.image('bowApollo', 'holding bow.png');
     }
 
     create() {
+        this.internalRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
+        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the left', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        
+       // Create Dialogue System
+       this.leftButtonClicked = false;
+       this.dialogueActive = false;
+       this.dialogueRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
+       this.dialogueRectangle.visible = false;
+       this.dialogueText = this.add.text(220, 100, '', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+       this.dialogueData = [
+           "HELP! My Baby is stuck in the fire!\n\nClick to proceed",
+           "Please traverse the fire path and bring him back before its too late!\n\nClick to proceed",
+           "WHEN YOU CLICK the time trial will start and you will have to retrive the baby and bring it back to me",
+           // Add more dialogue messages as needed
+       ];
+       this.dialogueIndex = 0;
+
         this.inventoryArtifact = this.add.sprite(450, 675, 'Bow').setOrigin(0.5,1);
 
         this.targetsHit = 0;
@@ -163,7 +181,7 @@ class BowPuzzle extends Phaser.Scene {
         this.Npc.body.immovable = true;
 
         // Create npcText
-        this.npcText = this.add.text(225, 220, "Hey kid, let's test your aim. Use this bow to destroy those \ntargets.", {
+        this.npcText = this.add.text(225, 220, "Hey kid, let's test your aim. Use this bow to destroy those \ntargets. (Press Space or Click)\n\nTalk to me once you kill them all or you need more arrows.", {
             fontSize: 40,
             fill: '#000000',
         });
@@ -215,6 +233,18 @@ class BowPuzzle extends Phaser.Scene {
     }
     
     update() {
+        if(this.targetsHit == 4) {
+            this.targetsHit += 1;
+            this.startDialogue();
+        }
+        if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
+            this.leftButtonClicked = true;
+            this.handleDialogueInteraction();
+        }
+        if (this.input.activePointer.leftButtonReleased()) {
+            this.leftButtonClicked = false;
+        }
+
         // Hacky overlap detection
         this.objects.children.each((object) => {
             
@@ -297,10 +327,46 @@ class BowPuzzle extends Phaser.Scene {
         }
 	}
 
+    handleDialogueInteraction() {
+        if (this.dialogueActive) {
+            // Check if there are more dialogue messages to display
+            if (this.dialogueIndex < this.dialogueData.length - 1) {
+                this.dialogueIndex++;
+                this.displayNextMessage();
+            } else {
+                // All dialogue messages have been displayed
+                this.finishDialogue();
+            }
+        }
+    }
+
+    displayNextMessage() {
+        this.dialogueText.setText(this.dialogueData[this.dialogueIndex]);
+    }
+
+    startDialogue() {
+        this.dialogueActive = true;
+        this.dialogueRectangle.visible = true;
+        this.dialogueIndex = 0;
+        this.displayNextMessage();
+        // Disable character movement or perform other actions as needed
+        this.player.body.enable = false;
+    }
+
+    finishDialogue() {
+        this.dialogueActive = false;
+        // Enable character movement or perform other actions as needed
+        this.player.body.enable = true;
+        this.dialogueRectangle.visible = false;
+        this.dialogueText.setText('');
+    }
+
     // If press E on npc
     npcInteract() {
         let eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         if (eKey && this.hasBow == false) {
+            this.internalRectangle.visible = false;
+            this.internalText.visible = false;
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;
@@ -308,12 +374,13 @@ class BowPuzzle extends Phaser.Scene {
             this.npcText.visible = true;
             this.physics.add.collider(this.player, this.chatBubble);
             this.hasBow = true;
-            this.time.delayedCall(5000, () => {
+            this.player.setTexture('bowApollo');
+            this.time.delayedCall(7000, () => {
                 this.npcText.destroy();
                 this.chatBubble.destroy();
             });
         }
-        else if (eKey && this.targetsHit == 4) {
+        else if (eKey && this.targetsHit == 5) {
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;

@@ -1,6 +1,7 @@
 class MazePuzzle extends Phaser.Scene {
     constructor() {
         super('mazepuzzle');
+        this.dialogueActive = false;
     }
 
     preload() {
@@ -12,13 +13,35 @@ class MazePuzzle extends Phaser.Scene {
     }
     
     create() {
+        // Puzzle things (timer + condition)
         this.timer;
-        this.timerText = this.add.text(100, 100, '00:00', { fontFamily: 'Arial', fontSize: '32px', color: '#ffffff' });
+        this.countdownTime = 40;
+        this.timerRect = this.add.rectangle(game.config.width/2, 100, 300, 70, 0x000000).setOrigin(0.5);
+        this.timerRect.setDepth(invArtDepth);
+        this.timerRect.visible = false;
+        this.timerText = this.add.text(game.config.width/2, 100, '40.000', { fontFamily: 'Arial', fontSize: '60px', color: '#ffffff', align: 'center'}).setOrigin(0.5);
         this.timerText.setDepth(invArtDepth);
+        this.timerText.visible = false;
         this.startedPuzzle = false;
+        this.endedPuzzle = false;
 
         this.inventoryArtifact = this.add.sprite(450, 675, 'Crow').setOrigin(0.5,1);
 
+        // Create Dialogue System
+        this.leftButtonClicked = false;
+        this.dialogueActive = false;
+        this.dialogueRectangle = this.add.rectangle(640, 400, 410, 200, 0xffffff).setOrigin(0).setDepth(dialogueDepth);
+        this.dialogueRectangle.visible = false;
+        this.dialogueText = this.add.text(650, 410, '', {fontSize: 24, color: '#000000', wordWrap: { width: 400 }}).setDepth(dialogueDepth);
+        this.dialogueData = [
+            "HELP! My Baby is stuck in the fire!\n\nClick to proceed",
+            "Please traverse the fire path and bring him back before its too late!\n\nClick to proceed",
+            "WHEN YOU CLICK the time trial will start and you will have to retrive the baby and bring it back to me",
+            // Add more dialogue messages as needed
+        ];
+        this.dialogueIndex = 0;
+
+          
         // Created Player
         this.player = this.physics.add.sprite(400, 800, 'Beta Apollo');
         this.player.setCollideWorldBounds(true);
@@ -159,9 +182,19 @@ class MazePuzzle extends Phaser.Scene {
         this.physics.add.overlap(this.playerInteractBox, this.baby, this.pickUpBaby, null, this);
         this.physics.add.overlap(this.player, this.hubDoor, this.interactDoor, null, this);
         this.physics.add.overlap(this.playerInteractBox, this.crow, this.pickUp, null, this);
+        //let upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+        //this.input.once('pointerdown', this.handleDialogueInteraction);
     }
 
     update() {
+        if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
+            this.leftButtonClicked = true;
+            this.handleDialogueInteraction();
+        }
+        if (this.input.activePointer.leftButtonReleased()) {
+            this.leftButtonClicked = false;
+        }        
+
         // Hacky overlap detection
         this.objects.children.each((object) => {
             
@@ -223,6 +256,44 @@ class MazePuzzle extends Phaser.Scene {
             this.updateTimer();
         }
     }
+    handleDialogueInteraction() {
+        if (this.dialogueActive) {
+            // Check if there are more dialogue messages to display
+            if (this.dialogueIndex < this.dialogueData.length - 1) {
+                this.dialogueIndex++;
+                this.displayNextMessage();
+            } else {
+                // All dialogue messages have been displayed
+                this.finishDialogue();
+            }
+        }
+    }
+
+    displayNextMessage() {
+        this.dialogueText.setText(this.dialogueData[this.dialogueIndex]);
+    }
+
+    startDialogue() {
+        this.dialogueActive = true;
+        this.dialogueRectangle.visible = true;
+        this.dialogueIndex = 0;
+        this.displayNextMessage();
+        // Disable character movement or perform other actions as needed
+        this.player.body.enable = false;
+    }
+
+    finishDialogue() {
+        this.dialogueActive = false;
+        this.player.body.enable = true;
+        this.dialogueRectangle.visible = false;
+        this.dialogueText.setText('');
+        if(this.startedPuzzle == false) {
+            this.events.emit('dialogueCompleteStarted');
+        } 
+        if(this.endedPuzzle == true) {
+            this.events.emit('dialogueCompleteFinished');
+        }
+    }
 
     // Reset player when they touch the fire
     resetPlayer() {
@@ -233,26 +304,39 @@ class MazePuzzle extends Phaser.Scene {
         inventory.pop();
         this.inventoryArtifact.destroy();
         this.updateInventory();
-        this.startedPuzzle = false;
     }
 
     npcInteract() {
         let eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         if (eKey && this.startedPuzzle == false) {
-            console.log("test");
-            this.startedPuzzle = true;
-            this.timer = this.time.addEvent({
-                delay: 40000, // delay of 1 second (1000 milliseconds)
-                callback: this.resetPlayer,
-                callbackScope: this,
+            this.startDialogue();
+            this.events.on('dialogueCompleteStarted', () => {
+                // Handle actions after dialogue is completed
+                this.startedPuzzle = true;
+                this.timerText.visible = true;
+                this.timer = this.time.addEvent({
+                    delay: 40000, // delay of 1 second (1000 milliseconds)
+                    callback: () => {this.scene.start('mazepuzzle')},
+                    callbackScope: this,
+                });
+                this.dialogueData = ["Wow! Thank you for saving my baby!\n\nClick to Proceed", "It isn't much but here's a Crow in return\n\nClick to Proceed"];
             });
+            
         }
         else if(eKey && inventory.length > 0) {
+            this.startDialogue();
             this.timer.remove(false);
-            this.crow.body.enable = true;
-            this.crow.visible = true;
-            inventory.pop();
-            this.updateInventory();
+            this.endedPuzzle = true;
+            this.timerText.visible = false;
+            this.timerRect.visible = false;
+            this.Npc.body.enable = false;
+            this.events.on('dialogueCompleteFinished', () => {
+                this.crow.body.enable = true;
+                this.crow.visible = true;
+                inventory.pop();
+                this.updateInventory();
+                this.startedPuzzle = false;
+            });
         }
     }
 
@@ -262,7 +346,7 @@ class MazePuzzle extends Phaser.Scene {
         const seconds = Math.floor(elapsedMilliseconds / 1000);
 
         // Format the time components with leading zeros
-        const formattedTime = `${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`;
+        const formattedTime = `${String(39-seconds).padStart(2, '0')}.${String(1000-milliseconds).padStart(3, '0')}`;
 
         this.timerText.setText(formattedTime);
     }
