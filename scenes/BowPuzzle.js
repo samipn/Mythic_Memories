@@ -69,7 +69,7 @@ class BowPuzzle extends Phaser.Scene {
 
     create() {
         this.internalRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
-        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the left.', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        this.internalText = this.add.text(220, 100, 'I should talk to that person on the left.', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
         
         // Create Dialogue System
         this.vision = false;
@@ -241,6 +241,47 @@ class BowPuzzle extends Phaser.Scene {
 
         // Player hitbox physics
         this.physics.add.overlap(this.playerInteractBox, this.Npc, this.npcInteract, null, this);
+
+        // Animation stuff
+        this.anims.create({
+            key: 'LeftAnimation',
+            frames: [
+                { key: 'sll' },
+                { key: 'slr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'RightAnimation',
+            frames: [
+                { key: 'srl' },
+                { key: 'srr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'FrontAnimation',
+            frames: [
+                { key: 'fl' },
+                { key: 'fr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'BackAnimation',
+            frames: [
+                { key: 'bl' },
+                { key: 'br' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
     }
     
     update() {
@@ -294,14 +335,30 @@ class BowPuzzle extends Phaser.Scene {
             this.player.setVelocityY(-MAX_VELOCITY);
             this.playerInteractBox.body.setSize(57,50);
             this.playerInteractBox.body.setOffset(7,85);
+            if(this.animationPlayingX == false && this.hasBow == false) {
+                this.player.play('BackAnimation', true);
+            } else {
+                this.player.stop('BackAnimation');
+            }
+            this.animationPlayingY = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
             // S key is currently being pressed
             this.player.setVelocityY(MAX_VELOCITY);
             this.playerInteractBox.body.setSize(57,50);
             this.playerInteractBox.body.setOffset(7,155);
+            if(this.animationPlayingX == false && this.hasBow == false) {
+                this.player.play('FrontAnimation', true);
+            } else {
+                this.player.stop('FrontAnimation');
+            }
+            this.animationPlayingY = true;
         }
         else {
+            this.animationPlayingY = false;
+            if(this.animationPlayingY == false && this.animationPlayingX == false && this.hasBow == false) {
+                this.player.setTexture('Beta Apollo');
+            }
             this.player.setVelocityY(0);
         }
         
@@ -311,14 +368,31 @@ class BowPuzzle extends Phaser.Scene {
             this.player.setVelocityX(-MAX_VELOCITY);
             this.playerInteractBox.body.setSize(70,140);
             this.playerInteractBox.body.setOffset(-65,0);
+            if(this.hasBow == false) {
+                this.player.play('LeftAnimation', true);
+            } else {
+                this.player.stop('LeftAnimation');
+            }
+            this.animationPlayingX = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
             // D key is currently being pressed
             this.player.setVelocityX(MAX_VELOCITY);
             this.playerInteractBox.body.setSize(70,140);
             this.playerInteractBox.body.setOffset(65,0);
+            if(this.hasBow == false) {
+                this.player.play('RightAnimation', true);
+            } else {
+                this.player.stop('RightAnimation');
+            }
+            this.animationPlayingX = true;
+
         }
         else {
+            this.animationPlayingX = false;
+            if(this.animationPlayingY == false && this.animationPlayingX == false && this.hasBow == false) {
+                this.player.setTexture('Beta Apollo');
+            }
             this.player.setVelocityX(0);
         }
         

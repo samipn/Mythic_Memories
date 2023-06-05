@@ -262,6 +262,47 @@ class MusicPuzzle extends Phaser.Scene {
         this.physics.add.overlap(this.playerInteractBox, this.lyre, this.pickUp, null, this);
         this.dialogueActive = true;
         this.startDialogue();
+
+        // Animation stuff
+        this.anims.create({
+            key: 'LeftAnimation',
+            frames: [
+                { key: 'sll' },
+                { key: 'slr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'RightAnimation',
+            frames: [
+                { key: 'srl' },
+                { key: 'srr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'FrontAnimation',
+            frames: [
+                { key: 'fl' },
+                { key: 'fr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'BackAnimation',
+            frames: [
+                { key: 'bl' },
+                { key: 'br' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
     }
 
     update() {
@@ -301,14 +342,26 @@ class MusicPuzzle extends Phaser.Scene {
             this.player.setVelocityY(-MAX_VELOCITY);
             this.playerInteractBox.body.setSize(57,50);
             this.playerInteractBox.body.setOffset(7,85);
+            if(this.animationPlayingX == false) {
+                this.player.play('BackAnimation', true);
+            }
+            this.animationPlayingY = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
             // S key is currently being pressed
             this.player.setVelocityY(MAX_VELOCITY);
             this.playerInteractBox.body.setSize(57,50);
             this.playerInteractBox.body.setOffset(7,155);
+            if(this.animationPlayingX == false) {
+                this.player.play('FrontAnimation', true);
+            }
+            this.animationPlayingY = true;
         }
         else {
+            this.animationPlayingY = false;
+            if(this.animationPlayingY == false && this.animationPlayingX == false) {
+                this.player.setTexture('Beta Apollo');
+            }
             this.player.setVelocityY(0);
         }
         
@@ -318,14 +371,23 @@ class MusicPuzzle extends Phaser.Scene {
             this.player.setVelocityX(-MAX_VELOCITY);
             this.playerInteractBox.body.setSize(70,140);
             this.playerInteractBox.body.setOffset(-65,0);
+            this.player.play('LeftAnimation', true);
+            this.animationPlayingX = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
             // D key is currently being pressed
             this.player.setVelocityX(MAX_VELOCITY);
             this.playerInteractBox.body.setSize(70,140);
             this.playerInteractBox.body.setOffset(65,0);
+            this.player.play('RightAnimation', true);
+            this.animationPlayingX = true;
+
         }
         else {
+            this.animationPlayingX = false;
+            if(this.animationPlayingY == false && this.animationPlayingX == false) {
+                this.player.setTexture('Beta Apollo');
+            }
             this.player.setVelocityX(0);
         }
 
@@ -438,16 +500,17 @@ class MusicPuzzle extends Phaser.Scene {
             this.playedOrder = [];
             this.musicSlots = ['audio0', 'audio0', 'audio0', 'audio0'];
             this.playing = false;
-            let pieceX = 450;
             let pieceY = 700;
             this.pieces.children.each((piece) => {
-                piece.x = pieceX;
                 piece.y = pieceY;
                 piece.body.immovable = false;
                 piece.body.enable = true;
                 piece.setPushable(true);
-                pieceX += 300;
             });
+            this.piece1.x = 750;
+            this.piece2.x = 1350;
+            this.piece3.x = 1050;
+            this.piece4.x = 450;
             this.audio0.stop();
             this.audio1.stop();
             this.audio2.stop();

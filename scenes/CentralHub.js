@@ -17,8 +17,18 @@ class CentralHub extends Phaser.Scene {
       this.load.image('Scroll', 'Scroll.png');
       this.load.image('Crow', 'Crow.png');
       this.load.image('finalApollo', 'Apollo.png');
+      this.load.image('sll', 'Side_Left_left.png');
+      this.load.image('slr', 'Side_Left_right.png');
+      this.load.image('srl', 'Side_Right_Left.png');
+      this.load.image('srr', 'Side_Right_Right.png');
+      this.load.image('fl', 'Front_left.png');
+      this.load.image('fr', 'front_right_step.png');
+      this.load.image('bl', 'back_step_left.png');
+      this.load.image('br', 'back_right_step.png');
     }
     create() {
+        this.animationPlayingX = false;
+        this.animationPlayingY = false;
         // Create Dialogue System
         this.vision = false;
         this.leftButtonClicked = false;
@@ -247,12 +257,58 @@ class CentralHub extends Phaser.Scene {
             this.dialogueActive = true;
             this.startDialogue();
         }
+
+        // Animation stuff
+        this.anims.create({
+            key: 'LeftAnimation',
+            frames: [
+                { key: 'sll' },
+                { key: 'slr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'RightAnimation',
+            frames: [
+                { key: 'srl' },
+                { key: 'srr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'FrontAnimation',
+            frames: [
+                { key: 'fl' },
+                { key: 'fr' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'BackAnimation',
+            frames: [
+                { key: 'bl' },
+                { key: 'br' },
+            ],
+            frameRate: 2.2, // frames per second
+            repeat: -1
+        });
     }
     update() {
         if(gameDone == true) {
             this.player.body.enable = false;
             this.player.x = 900;
             this.player.y = 400;
+            this.player.stop('FrontAnimation');
+            this.player.stop('BackAnimation');
+            this.player.stop('LeftAnimation');
+            this.player.stop('RightAnimation');
+            this.player.setTexture('finalApollo');
         }
         if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
             this.leftButtonClicked = true;
@@ -321,14 +377,26 @@ class CentralHub extends Phaser.Scene {
             this.player.setVelocityY(-MAX_VELOCITY);
             this.playerInteractBox.body.setSize(57,50);
             this.playerInteractBox.body.setOffset(7,85);
+            if(this.animationPlayingX == false  && gameDone != true) {
+                this.player.play('BackAnimation', true);
+            }
+            this.animationPlayingY = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
             // S key is currently being pressed
             this.player.setVelocityY(MAX_VELOCITY);
             this.playerInteractBox.body.setSize(57,50);
             this.playerInteractBox.body.setOffset(7,155);
+            if(this.animationPlayingX == false  && gameDone != true) {
+                this.player.play('FrontAnimation', true);
+            }
+            this.animationPlayingY = true;
         }
         else {
+            this.animationPlayingY = false;
+            if(this.animationPlayingY == false && this.animationPlayingX == false && gameDone != true) {
+                this.player.setTexture('Beta Apollo');
+            }
             this.player.setVelocityY(0);
         }
         
@@ -338,14 +406,27 @@ class CentralHub extends Phaser.Scene {
             this.player.setVelocityX(-MAX_VELOCITY);
             this.playerInteractBox.body.setSize(70,140);
             this.playerInteractBox.body.setOffset(-65,0);
+            if(gameDone != true) {
+                this.player.play('LeftAnimation', true);
+            }
+            this.animationPlayingX = true;
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
             // D key is currently being pressed
             this.player.setVelocityX(MAX_VELOCITY);
             this.playerInteractBox.body.setSize(70,140);
             this.playerInteractBox.body.setOffset(65,0);
+            if(gameDone != true) {
+                this.player.play('RightAnimation', true);
+            }
+            this.animationPlayingX = true;
+
         }
         else {
+            this.animationPlayingX = false;
+            if(this.animationPlayingY == false && this.animationPlayingX == false && gameDone != true) {
+                this.player.setTexture('Beta Apollo');
+            }
             this.player.setVelocityX(0);
         }
     }
@@ -424,25 +505,25 @@ class CentralHub extends Phaser.Scene {
 
     interactDoor(player, door) {
         if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
-                if(door == this.puzzleDoor1 && level1Complete == false) {
+                if(door == this.puzzleDoor1 && level1Complete == false && inventory.length == 0) {
                     this.cameras.main.fade(1000, 0, 0, 0);
                     this.time.delayedCall(1000, () => {
                         this.scene.start('musicpuzzle');
                     });
                 }
-                if(door == this.puzzleDoor2 && level1Complete == true && level2Complete == false) {
+                if(door == this.puzzleDoor2 && level1Complete == true && level2Complete == false && inventory.length == 0) {
                     this.cameras.main.fade(1000, 0, 0, 0);
                     this.time.delayedCall(1000, () => {
                         this.scene.start('bowpuzzle');
                     });
                 }
-                if(door == this.puzzleDoor3 && level1Complete == true && level2Complete == true && level3Complete == false) {
+                if(door == this.puzzleDoor3 && level1Complete == true && level2Complete == true && level3Complete == false && inventory.length == 0) {
                     this.cameras.main.fade(1000, 0, 0, 0);
                     this.time.delayedCall(1000, () => {
                         this.scene.start('riddlepuzzle');
                     });
                 }
-                if(door == this.puzzleDoor4&& level1Complete == true && level2Complete == true && level3Complete == true && level4Complete == false) {
+                if(door == this.puzzleDoor4&& level1Complete == true && level2Complete == true && level3Complete == true && level4Complete == false && inventory.length == 0) {
                     this.cameras.main.fade(1000, 0, 0, 0);
                     this.time.delayedCall(1000, () => {
                         this.scene.start('mazepuzzle');
@@ -538,11 +619,11 @@ class CentralHub extends Phaser.Scene {
                             yoyo: true,
                             hold: 1000,
                             onYoyo: () => {
+                                gameDone = true;
                                 this.player.enable = false;
                                 this.player.setTexture('finalApollo');
                             },
                             onComplete: () => {
-                                gameDone = true;
                                 this.startDialogue();
                                 this.events.on('dialogueDoneDone', () => {
                                     let blackFade = this.add.rectangle(0,0,1920,1080,0x000000).setOrigin(0).setDepth(visionDepth);
