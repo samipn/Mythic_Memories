@@ -19,8 +19,8 @@ class CentralHub extends Phaser.Scene {
       this.load.image('finalApollo', 'Apollo.png');
       this.load.image('sll', 'Side_Left_left.png');
       this.load.image('slr', 'Side_Left_right.png');
-      this.load.image('srl', 'Side_Right_Left.png');
-      this.load.image('srr', 'Side_Right_Right.png');
+      this.load.image('srl', 'Side_Right_left.png');
+      this.load.image('srr', 'Side_Right_right.png');
       this.load.image('fl', 'Front_left.png');
       this.load.image('fr', 'front_right_step.png');
       this.load.image('bl', 'back_step_left.png');
