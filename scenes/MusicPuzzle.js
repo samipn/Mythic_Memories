@@ -18,7 +18,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.load.image('BirthVision', 'BirthVision.png')
     }
     create() {
-            //this.visionPlayer = this.add.image();
+        //this.visionPlayer = this.add.image();
         this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         this.inventoryArtifact = this.add.sprite(450, 675, 'Lyre').setOrigin(0.5,1);
 
@@ -30,11 +30,19 @@ class MusicPuzzle extends Phaser.Scene {
         //this.dialogueRectangle.visible = false;
         this.dialogueText = this.add.text(220, 100, '', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
         this.dialogueData = [
-            "Hmm, a music puzzle, I may have to put these notes in order.\n\n\nClick to Proceed",
+            "Hmm, a music puzzle, I may have to put these notes in order.\n\n\n\nClick to Proceed",
             "Push the notes to the boxes. If they are in the correct left to right play order you complete the puzzle.\nPress E on the music notes to hear it individually.\n\nClick to Dismiss"
             // Add more dialogue messages as needed
         ];
         this.dialogueIndex = 0;
+        this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+        this.bg.visible = false;
+        this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+        this.visionPlayer.visible = false;
+        this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+        this.visionRectangle.visible = false;
+        this.visionImage = this.add.image(game.config.width/2, 600, 'BirthVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+        this.visionImage.visible = false;
         
 
         // Create audio
@@ -103,13 +111,13 @@ class MusicPuzzle extends Phaser.Scene {
         // Created music puzzle pieces
         this.pieces = this.add.group();
 
-        this.piece1 = this.physics.add.sprite(450, 700, 'mn1').setOrigin(0.5);
+        this.piece1 = this.physics.add.sprite(750, 700, 'mn1').setOrigin(0.5);
         this.piece1.name = "audio1";
         this.piece1.setCollideWorldBounds(true);
         this.piece1.setDepth(envDepth);
         this.pieces.add(this.piece1);
 
-        this.piece2 = this.physics.add.sprite(750, 700, 'mn2').setOrigin(0.5);
+        this.piece2 = this.physics.add.sprite(1350, 700, 'mn2').setOrigin(0.5);
         this.piece2.name = "audio2";
         this.piece2.setCollideWorldBounds(true);
         this.piece2.setDepth(envDepth);
@@ -121,7 +129,7 @@ class MusicPuzzle extends Phaser.Scene {
         this.piece3.setDepth(envDepth);
         this.pieces.add(this.piece3);
 
-        this.piece4 = this.physics.add.sprite(1350, 700, 'mn4').setOrigin(0.5).setScale(0.7);
+        this.piece4 = this.physics.add.sprite(450, 700, 'mn4').setOrigin(0.5).setScale(0.7);
         this.piece4.name = "audio4";
         this.piece4.setCollideWorldBounds(true);
         this.piece4.setDepth(envDepth);
@@ -342,13 +350,18 @@ class MusicPuzzle extends Phaser.Scene {
 
     displayNextMessage() {
         this.dialogueText.setText(this.dialogueData[this.dialogueIndex]);
-        if(this.vision && this.dialogueIndex == 1) {
+        if(this.vision && this.dialogueIndex > 0) {
             // spawn head, blank background, pic, text
-            this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
-            this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
-            this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
-            this.visionImage = this.add.image(game.config.width/2, 400, 'BirthVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+            this.bg.visible = true;
+            this.visionPlayer.visible = true;
+            this.visionRectangle.visible = true;
+            this.visionImage.visible = true;
             this.dialogueText.setDepth(visionDepth+1).setColor('#000000');
+            // this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+            // this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+            // this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+            // this.visionImage = this.add.image(game.config.width/2, 600, 'BirthVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+            // this.dialogueText.setDepth(visionDepth+1).setColor('#000000');
             console.log("it works");
         }
     }
@@ -367,7 +380,10 @@ class MusicPuzzle extends Phaser.Scene {
         this.player.body.enable = true;
         this.dialogueRectangle.visible = false;
         this.dialogueText.setText('');
-        this.dialogueData = ["What's this vision that's coming to me?!\n\nClick to Proceed", "It looks like some ceremonial and beautiful birth with the same heavenly melody I just heard...\nWeird... Well I better get back and put this on the pedestal"]
+        this.dialogueData = ["What's this vision that's coming to me?!\n\n\n\nClick to Proceed",
+        "*ANGEL*: From the day he was born, Greek god Apollo led a life of adventure. He was the son of Zeus and his mistress, the Titaness Leto. When Zeus’s jealous wife Hera found out about the pregnancy, she punished Leto, forbidding her from giving birth on land, and sending the deadly Python to chase her away. Leto found refuge on the floating island of Ortygia. Hera then forced Eileithyia, the goddess of childbirth, to prolong Leto’s labor for an agonizing 9 days. Eventually Leto gave birth to twins: Artemis, and her twin brother Apollo. Thus the great Greek god Apollo entered the world, fully grown, carrying a golden sword. The island around him burst into life, filled with lush plants, fragrant flowers and beautiful music.\n\n\n\n\n\nClick to Proceed",
+        "It looks like some ceremonial and beautiful birth with the same heavenly melody I just heard using this Lyre too...\nWhy would I randomly see some Greek God's Birth?... Weird... Well I better get back and put this on the pedestal.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nClick to Proceed",
+        "It looks like that person killed the Python with the same bow I used... Weird...\nWell I better give this bow back to him.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nClick to Proceed"];
         if(this.vision) {
             // destroy vision created things
             this.bg.destroy();
@@ -375,6 +391,8 @@ class MusicPuzzle extends Phaser.Scene {
             this.visionRectangle.destroy();
             this.visionImage.destroy();
             this.dialogueText.setText('');
+            this.vision = false;
+            console.log(this.dialogueIndex);
         }
         // Enable character movement or perform other actions as needed
     }

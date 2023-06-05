@@ -10,11 +10,33 @@ class RiddlePuzzle extends Phaser.Scene {
         this.load.image('S', 'S.png');
         this.load.image('D', 'D.png');
         this.load.image('F', 'F.png');
+        this.load.image('LiarVision', 'LiarVision.png')
     }
 
     create() {
+        // Create Dialogue System
+        this.vision = false;
+        this.leftButtonClicked = false;
+        this.dialogueActive = false;
+        this.dialogueRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
+        this.dialogueRectangle.visible = false;
+        this.dialogueText = this.add.text(220, 100, '', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        this.dialogueData = ["What's this vision that's coming to me?!\n\n\n\nClick to Proceed",
+                             "*ANGEL*: Greek god Apollo never married. But he did inherit his father’s lustful ways, and had several love affairs with both men and women. He even fathered a large number of children out of marriage. Not all Apollo’s advances were well received, however, as we can see in the story between Apollo and Cassandra, daughter to King Priam of Troy. Apollo was quite taken with Cassandra, and he tried to win over her affection by gifting her the gift of prophecy. When she spurned his advances, Apollo’s infatuation quickly turned sour, and he made sure that no one would ever believe her predictions were true. Sadly, this meant when Cassandra predicted the fall of Troy and the death of Agamemnon, she was dismissed by everyone around her as a liar.\n\n\nClick to Proceed",
+                             "It looks like that gift Apollo gave her is the same prophecy scroll this person gave me... Weird...\nWell I better put this back on the pedestal.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nClick to Proceed"];
+        
+        this.dialogueIndex = 0;
+        this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+        this.bg.visible = false;
+        this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+        this.visionPlayer.visible = false;
+        this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+        this.visionRectangle.visible = false;
+        this.visionImage = this.add.image(1600, 100, 'LiarVision').setOrigin(0.5, 0).setScale(0.745).setDepth(visionDepth);
+        this.visionImage.visible = false;
+
         this.internalRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
-        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the right', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the right.', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
 
         this.eKey = Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E));
         this.inventoryArtifact = this.add.sprite(450, 675, 'Scroll').setOrigin(0.5,1);
@@ -177,6 +199,14 @@ class RiddlePuzzle extends Phaser.Scene {
     }
 
     update() {
+        if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
+            this.leftButtonClicked = true;
+            this.handleDialogueInteraction();
+        }
+        if (this.input.activePointer.leftButtonReleased()) {
+            this.leftButtonClicked = false;
+        }
+
         // Hacky overlap detection
         this.objects.children.each((object) => {
             
@@ -204,14 +234,14 @@ class RiddlePuzzle extends Phaser.Scene {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W).isDown) {
             // W key is currently being pressed
             this.player.setVelocityY(-MAX_VELOCITY);
-            this.playerInteractBox.body.setSize(70,50);
-            this.playerInteractBox.body.setOffset(0,50);
+            this.playerInteractBox.body.setSize(57,50);
+            this.playerInteractBox.body.setOffset(7,85);
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S).isDown) {
             // S key is currently being pressed
             this.player.setVelocityY(MAX_VELOCITY);
-            this.playerInteractBox.body.setSize(70,50);
-            this.playerInteractBox.body.setOffset(0,120);
+            this.playerInteractBox.body.setSize(57,50);
+            this.playerInteractBox.body.setOffset(7,155);
         }
         else {
             this.player.setVelocityY(0);
@@ -221,18 +251,76 @@ class RiddlePuzzle extends Phaser.Scene {
         if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A).isDown) {
             // A key is currently being pressed
             this.player.setVelocityX(-MAX_VELOCITY);
-            this.playerInteractBox.body.setSize(70,120);
-            this.playerInteractBox.body.setOffset(-70,0);
+            this.playerInteractBox.body.setSize(70,140);
+            this.playerInteractBox.body.setOffset(-65,0);
         }
         else if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D).isDown) {
             // D key is currently being pressed
             this.player.setVelocityX(MAX_VELOCITY);
-            this.playerInteractBox.body.setSize(70,120);
-            this.playerInteractBox.body.setOffset(70,0);
+            this.playerInteractBox.body.setSize(70,140);
+            this.playerInteractBox.body.setOffset(65,0);
         }
         else {
             this.player.setVelocityX(0);
-        }    
+        }
+    }
+
+    handleDialogueInteraction() {
+        if (this.dialogueActive) {
+            // Check if there are more dialogue messages to display
+            if (this.dialogueIndex < this.dialogueData.length - 1) {
+                this.dialogueIndex++;
+                this.displayNextMessage();
+            } else {
+                // All dialogue messages have been displayed
+                this.finishDialogue();
+            }
+        }
+    }
+
+    displayNextMessage() {
+        this.dialogueText.setText(this.dialogueData[this.dialogueIndex]);
+        if(this.vision && this.dialogueIndex > 0) {
+            // spawn head, blank background, pic, text
+            this.bg.visible = true;
+            this.visionPlayer.visible = true;
+            this.visionRectangle.visible = true;
+            this.visionImage.visible = true;
+            this.dialogueText.setDepth(visionDepth+1).setColor('#000000').setWordWrapWidth(1220);
+            // this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+            // this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+            // this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+            // this.visionImage = this.add.image(game.config.width/2, 600, 'BirthVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+            // this.dialogueText.setDepth(visionDepth+1).setColor('#000000');
+            console.log("it works");
+        }
+    }
+
+    startDialogue() {
+        this.dialogueActive = true;
+        this.dialogueRectangle.visible = true;
+        this.dialogueIndex = 0;
+        this.displayNextMessage();
+        // Disable character movement or perform other actions as needed
+        this.player.body.enable = false;
+    }
+
+    finishDialogue() {
+        this.dialogueActive = false;
+        this.player.body.enable = true;
+        this.dialogueRectangle.visible = false;
+        this.dialogueText.setText('');
+        if(this.vision) {
+            // destroy vision created things
+            this.bg.destroy();
+            this.visionPlayer.destroy();
+            this.visionRectangle.destroy();
+            this.visionImage.destroy();
+            this.dialogueText.setText('');
+            console.log(this.dialogueIndex);
+        }
+        this.events.emit('dialogueComplete');
+        // Enable character movement or perform other actions as needed
     }
 
     npcInteract() {
@@ -323,7 +411,10 @@ class RiddlePuzzle extends Phaser.Scene {
 
     updateInventory() {
         if(inventory.length > 0) {
-            this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]).setScale(1.5);
+            this.inventoryArtifact = this.add.sprite(1700,960, inventory[0]);
+            if(inventory[0] != 'Scroll') {
+                this.inventoryArtifact.setScale(1.5);
+            }
             this.inventoryArtifact.setDepth(invArtDepth);
             console.log(this.inventoryArtifact);
         } else {
@@ -333,10 +424,15 @@ class RiddlePuzzle extends Phaser.Scene {
 
     pickUp () {
         if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E))) {
-            inventory.push('Scroll');
-            this.scroll.body.enable = false;
-            this.scroll.visible = false;
-            this.updateInventory();
+            this.vision = true;
+            this.startDialogue();
+            this.events.on('dialogueComplete', () => {
+                inventory.push('Scroll');
+                this.scroll.body.enable = false;
+                this.scroll.visible = false;
+                this.updateInventory();
+                level3Complete = true;
+            });
         }
     }
 }

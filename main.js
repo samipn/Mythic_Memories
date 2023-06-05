@@ -11,7 +11,9 @@ const objectDepth = 2;
 const playerDepth = 1;
 const envDepth = 0;
 let inventory = [];
-let pedestalArtifacts = [true, true, true, true];
+let pedestalArtifacts = [false, false, false, false];
+let tutorialDone = false;
+let gameDone = false;
 let level1Complete = false;
 let level2Complete = false;
 let level3Complete = false;
@@ -27,7 +29,6 @@ const game = new Phaser.Game({
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true,
             gravity: {
                 x : 0,
                 y : 0
@@ -35,6 +36,6 @@ const game = new Phaser.Game({
         }
     },
     backgroundColor: 0x000000,
-    scene: [CentralHub, MusicPuzzle, BowPuzzle, RiddlePuzzle, MazePuzzle],
+    scene: [CentralHub, MusicPuzzle, BowPuzzle, RiddlePuzzle, MazePuzzle, EndScreen],
     title: "Mythic Memories"
 });

@@ -3,16 +3,19 @@ class Arrow extends Phaser.Physics.Arcade.Sprite
 {
 	constructor(scene, x, y) {
 		super(scene, x, y, 'Arrow');
+        this.scene = scene;
 	}
 
 	fire(x, y) {
-		this.body.reset(x, y);
-
-		this.setActive(true);
-		this.setVisible(true);
-        this.setDepth(objectDepth);
-        this.setScale(0.3);
-        this.setVelocityY(-400);
+        if(this.scene.vision == false) {
+            this.body.reset(x, y);
+            this.setActive(true);
+            this.setVisible(true);
+            this.setDepth(objectDepth);
+            this.setScale(0.3);
+            this.setVelocityY(-400);
+        }
+		
 	}
 
 }
@@ -61,25 +64,33 @@ class BowPuzzle extends Phaser.Scene {
         this.load.image('NpcB', 'NPC 1.png');
         this.load.image('Fence', 'Fence.png');
         this.load.image('bowApollo', 'holding bow.png');
+        this.load.image('PythonVision', 'PythonVision.png')
     }
 
     create() {
         this.internalRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
-        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the left', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        this.internalText = this.add.text(220, 100, 'I should talk to that guy on the left.', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
         
-       // Create Dialogue System
-       this.leftButtonClicked = false;
-       this.dialogueActive = false;
-       this.dialogueRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
-       this.dialogueRectangle.visible = false;
-       this.dialogueText = this.add.text(220, 100, '', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
-       this.dialogueData = [
-           "HELP! My Baby is stuck in the fire!\n\nClick to proceed",
-           "Please traverse the fire path and bring him back before its too late!\n\nClick to proceed",
-           "WHEN YOU CLICK the time trial will start and you will have to retrive the baby and bring it back to me",
-           // Add more dialogue messages as needed
-       ];
-       this.dialogueIndex = 0;
+        // Create Dialogue System
+        this.vision = false;
+        this.leftButtonClicked = false;
+        this.dialogueActive = false;
+        this.dialogueRectangle = this.add.rectangle(220, 100, 1470, 200, 0x000000).setOrigin(0).setDepth(dialogueDepth).setAlpha(0.5);
+        this.dialogueRectangle.visible = false;
+        this.dialogueText = this.add.text(220, 100, '', {fontSize: 40, color: '#ffffff', wordWrap: { width: 1470 }}).setDepth(dialogueDepth);
+        this.dialogueData = ["What's this vision that's coming to me?!\n\n\n\nClick to Proceed",
+                             "*ANGEL*: At just four days old, Apollo went on a hunt to avenge the Python who had tormented his pregnant mother. With his handy bow and arrow, he hit the Python and killed it instantly, while the nymphs of Delphi cheered him on. The Python’s mother Gaea, meanwhile, was deeply angered. So much so, she told Zeus to banish Apollo to Tartarus. Instead, Zeus punished Apollo by exiling him from Olympus and making him serve as a slave on earth for nine long years. At the end of his sentence Apollo patched things up with Gaea, and she gifted him the Oracular Temple of Delphi. To say thanks, Apollo set up the Pythian Games in her honor.\n\n\n\n\n\n\n\nClick to Proceed",
+                             "It looks like that person killed the Python with the same bow I used... Weird...\nWell I better give this bow back to him.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nClick to Proceed"];
+        
+        this.dialogueIndex = 0;
+        this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+        this.bg.visible = false;
+        this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+        this.visionPlayer.visible = false;
+        this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+        this.visionRectangle.visible = false;
+        this.visionImage = this.add.image(game.config.width/2, 600, 'PythonVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+        this.visionImage.visible = false;
 
         this.inventoryArtifact = this.add.sprite(450, 675, 'Bow').setOrigin(0.5,1);
 
@@ -181,11 +192,11 @@ class BowPuzzle extends Phaser.Scene {
         this.Npc.body.immovable = true;
 
         // Create npcText
-        this.npcText = this.add.text(225, 220, "Hey kid, let's test your aim. Use this bow to destroy those \ntargets. (Press Space or Click)\n\nTalk to me once you kill them all or you need more arrows.", {
+        this.npcText = this.add.text(225, 220, "Hey kid, let's test your aim. Use this bow to destroy those \ntargets. (Press Space or Click)\n\nTalk to me once you kill them all or you need more arrows\n(You got 10).", {
             fontSize: 40,
             fill: '#000000',
         });
-        this.npcText.setDepth(objectDepth);
+        this.npcText.setDepth(dialogueDepth+1);
         this.npcText.visible = false;
 
         // Create extra arrows text
@@ -193,7 +204,7 @@ class BowPuzzle extends Phaser.Scene {
             fontSize: 40,
             fill: '#000000',
         });
-        this.arrowsText.setDepth(objectDepth);
+        this.arrowsText.setDepth(dialogueDepth+1);
         this.arrowsText.visible = false;
 
         // Victory Text
@@ -201,7 +212,7 @@ class BowPuzzle extends Phaser.Scene {
             fontSize: 40,
             fill: '#000000',
         });
-        this.victoryText.setDepth(objectDepth);
+        this.victoryText.setDepth(dialogueDepth+1);
         this.victoryText.visible = false;
 
         // Create overlap hitboxes 
@@ -233,8 +244,17 @@ class BowPuzzle extends Phaser.Scene {
     }
     
     update() {
+        if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
+            this.leftButtonClicked = true;
+            this.handleDialogueInteraction();
+        }
+        if (this.input.activePointer.leftButtonReleased()) {
+            this.leftButtonClicked = false;
+        }
         if(this.targetsHit == 4) {
             this.targetsHit += 1;
+            this.vision = true;
+            //this.ArrowGroup.destroy();
             this.startDialogue();
         }
         if (this.input.activePointer.leftButtonDown() && !this.leftButtonClicked) {
@@ -342,6 +362,20 @@ class BowPuzzle extends Phaser.Scene {
 
     displayNextMessage() {
         this.dialogueText.setText(this.dialogueData[this.dialogueIndex]);
+        if(this.vision && this.dialogueIndex > 0) {
+            // spawn head, blank background, pic, text
+            this.bg.visible = true;
+            this.visionPlayer.visible = true;
+            this.visionRectangle.visible = true;
+            this.visionImage.visible = true;
+            this.dialogueText.setDepth(visionDepth+1).setColor('#000000');
+            // this.bg = this.add.rectangle(0,0,1920,1080,0xF1EB9C).setOrigin(0).setDepth(visionDepth);
+            // this.visionPlayer = this.add.image(300, 780, 'Beta Apollo').setOrigin(1,0).setScale(5).setDepth(visionDepth);
+            // this.visionRectangle = this.add.rectangle(220, 100, 1470, 720, 0xffffff).setOrigin(0).setDepth(visionDepth).setAlpha(1);
+            // this.visionImage = this.add.image(game.config.width/2, 600, 'BirthVision').setOrigin(0.5, 0).setScale(0.5).setDepth(visionDepth);
+            // this.dialogueText.setDepth(visionDepth+1).setColor('#000000');
+            console.log("it works");
+        }
     }
 
     startDialogue() {
@@ -355,10 +389,19 @@ class BowPuzzle extends Phaser.Scene {
 
     finishDialogue() {
         this.dialogueActive = false;
-        // Enable character movement or perform other actions as needed
         this.player.body.enable = true;
         this.dialogueRectangle.visible = false;
         this.dialogueText.setText('');
+        if(this.vision) {
+            // destroy vision created things
+            this.bg.destroy();
+            this.visionPlayer.destroy();
+            this.visionRectangle.destroy();
+            this.visionImage.destroy();
+            this.dialogueText.setText('');
+            console.log(this.dialogueIndex);
+        }
+        // Enable character movement or perform other actions as needed
     }
 
     // If press E on npc
@@ -370,12 +413,14 @@ class BowPuzzle extends Phaser.Scene {
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;
-            this.chatBubble.setDepth(envDepth);
+            this.chatBubble.setDepth(dialogueDepth);
             this.npcText.visible = true;
             this.physics.add.collider(this.player, this.chatBubble);
             this.hasBow = true;
             this.player.setTexture('bowApollo');
+            this.player.body.enable = false;
             this.time.delayedCall(7000, () => {
+                this.player.body.enable = true;
                 this.npcText.destroy();
                 this.chatBubble.destroy();
             });
@@ -384,7 +429,7 @@ class BowPuzzle extends Phaser.Scene {
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;
-            this.chatBubble.setDepth(envDepth);
+            this.chatBubble.setDepth(dialogueDepth);
             this.victoryText.visible = true;
             this.physics.add.collider(this.player, this.chatBubble);
             this.hasBow = true;
@@ -395,12 +440,13 @@ class BowPuzzle extends Phaser.Scene {
             this.targetsHit += 1;
             inventory.push('Bow');
             this.updateInventory();
+            level2Complete = true;
         }
         else if (eKey && this.ArrowGroup.getFrameQuantity() == 0){
             this.chatBubble = this.add.rectangle(205, tileSize*SCALE*2, 1490, 300, 0xFFF8DC).setOrigin(0);
             this.physics.add.existing(this.chatBubble);
             this.chatBubble.body.immovable = true;
-            this.chatBubble.setDepth(envDepth);
+            this.chatBubble.setDepth(dialogueDepth);
             this.arrowsText.visible = true;
             this.physics.add.collider(this.player, this.chatBubble);
             this.hasBow = true;
